@@ -1940,25 +1940,40 @@ function SettingsView({ fines }: { fines: Fine[] }) {
   };
 
   const [sys, setSys] = useState<LibrarySettings>(() => getSettings());
-  const [sysMsg, setSysMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [instMsg, setInstMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [libMsg, setLibMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const totalPaid = fines.filter((f) => f.status === "Paid").reduce((a, f) => a + Number(f.amount || 0), 0);
   const totalUnpaid = fines.filter((f) => f.status !== "Paid").reduce((a, f) => a + Number(f.amount || 0), 0);
 
-  const saveSystem = (e: React.FormEvent) => {
+  const persistSettings = (overrides: Partial<LibrarySettings>) => {
+    const current = getSettings();
+    const next: LibrarySettings = { ...current, ...overrides };
+    saveSettings(next);
+    setSys(next);
+    return next;
+  };
+
+  const saveInstitute = (e: React.FormEvent) => {
     e.preventDefault();
-    const rate = Number(sys.fineRate);
-    if (!Number.isFinite(rate) || rate < 0) { setSysMsg({ kind: "err", text: "Fine rate must be a non-negative number." }); return; }
-    const maxIssues = Math.floor(Number(sys.maxIssuesPerStudent));
-    if (!Number.isFinite(maxIssues) || maxIssues < 1) { setSysMsg({ kind: "err", text: "Maximum book issues must be at least 1." }); return; }
-    saveSettings({
-      fineRate: rate,
+    setInstMsg(null);
+    persistSettings({
       instituteName: sys.instituteName.trim().slice(0, 120),
       libraryName: sys.libraryName.trim().slice(0, 120) || DEFAULT_SETTINGS.libraryName,
       logoUrl: sys.logoUrl.trim(),
       address: sys.address.trim().slice(0, 300),
-      maxIssuesPerStudent: maxIssues,
     });
-    setSysMsg({ kind: "ok", text: "System settings saved." });
+    setInstMsg({ kind: "ok", text: "Institute settings saved successfully." });
+  };
+
+  const saveLibrary = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLibMsg(null);
+    const rate = Number(sys.fineRate);
+    if (!Number.isFinite(rate) || rate < 0) { setLibMsg({ kind: "err", text: "Fine rate must be a non-negative number." }); return; }
+    const maxIssues = Math.floor(Number(sys.maxIssuesPerStudent));
+    if (!Number.isFinite(maxIssues) || maxIssues < 1) { setLibMsg({ kind: "err", text: "Maximum book issues must be at least 1." }); return; }
+    persistSettings({ fineRate: rate, maxIssuesPerStudent: maxIssues });
+    setLibMsg({ kind: "ok", text: "Library settings saved successfully." });
   };
 
   return (
@@ -1994,7 +2009,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
         <div className="lp-card">
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Institute Settings</h3>
           <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>Institute identity used across the app and exports.</p>
-          <form onSubmit={saveSystem}>
+          <form onSubmit={saveInstitute}>
             <div className="lp-input-group">
               <label>Institute Name</label>
               <input value={sys.instituteName} maxLength={120}
@@ -2018,6 +2033,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
               <input value={sys.address} maxLength={300}
                 onChange={(e) => setSys({ ...sys, address: e.target.value })} placeholder="Street, City, Country" />
             </div>
+            {instMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: instMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: instMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{instMsg.text}</div>}
             <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
               <i className="fa-solid fa-floppy-disk" /> Save Institute Settings
             </button>
@@ -2027,7 +2043,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
         <div className="lp-card">
           <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Library Settings</h3>
           <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>Circulation rules applied to fines and book issues.</p>
-          <form onSubmit={saveSystem}>
+          <form onSubmit={saveLibrary}>
             <div className="lp-input-group">
               <label>Fine Rate (৳ per day)</label>
               <input type="number" min={0} step="0.5" value={sys.fineRate}
@@ -2038,7 +2054,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
               <input type="number" min={1} step="1" value={sys.maxIssuesPerStudent}
                 onChange={(e) => setSys({ ...sys, maxIssuesPerStudent: Number(e.target.value) })} />
             </div>
-            {sysMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: sysMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: sysMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{sysMsg.text}</div>}
+            {libMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: libMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: libMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{libMsg.text}</div>}
             <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
               <i className="fa-solid fa-floppy-disk" /> Save Library Settings
             </button>
