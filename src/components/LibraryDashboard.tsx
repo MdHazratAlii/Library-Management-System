@@ -10,6 +10,8 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
 import { uploadTitledImage } from "@/lib/image-upload";
+import { useLang, localeFor } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 type Category = { id: number; name: string; descr: string };
 type Book = { id: number; title: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
@@ -60,6 +62,7 @@ function daysBetween(dueISO: string) {
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { t, lang } = useLang();
   const validViews: ViewKey[] = ["dashboard", "books", "categories", "students", "issues", "overdue", "fines", "reports", "settings"];
   const [view, setViewState] = useState<ViewKey>(() => {
     if (typeof window === "undefined") return "dashboard";
@@ -380,7 +383,7 @@ export function Dashboard() {
     loadAll();
   };
 
-  const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const dateStr = new Date().toLocaleDateString(localeFor(lang), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const NavItem = ({ id, icon, label }: { id: ViewKey; icon: string; label: string }) => (
     <div
