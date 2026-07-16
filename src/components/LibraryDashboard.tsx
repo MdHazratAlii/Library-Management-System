@@ -1372,7 +1372,7 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
           <Stat label={t("stu_stat_issued")} value={activeCount} tone="info" />
           <Stat label={t("stu_stat_overdue")} value={overdueCount} tone={overdueCount > 0 ? "danger" : "warn"} />
-          label={t("stu_stat_total_fines")} value={`৳${totalFines.toFixed(2)}`} tone="money" />
+          <Stat label={t("stu_stat_total_fines")} value={`৳${totalFines.toFixed(2)}`} tone="money" />
           <Stat label={t("stu_stat_unpaid")} value={`৳${unpaidFines.toFixed(2)}`} tone={unpaidFines > 0 ? "danger" : "money"} />
         </div>
 
