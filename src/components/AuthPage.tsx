@@ -1,11 +1,6 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-export const Route = createFileRoute("/auth")({
-  beforeLoad: () => { throw redirect({ to: "/" }); },
-  component: () => null,
-});
 
 export function AuthPage({ denied }: { denied?: boolean } = {}) {
   const navigate = useNavigate();

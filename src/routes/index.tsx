@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthPage } from "./auth";
+import { AuthPage } from "@/components/AuthPage";
 
 const Dashboard = lazy(() =>
   import("@/components/LibraryDashboard").then((module) => ({ default: module.Dashboard })),
