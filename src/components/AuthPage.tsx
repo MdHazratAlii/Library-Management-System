@@ -1,15 +1,17 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLang } from "@/lib/i18n";
 
 export function AuthPage({ denied }: { denied?: boolean } = {}) {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(
-    denied ? "Access denied. Your account is not authorized as an admin." : null,
+    denied ? t("err_access_denied") : null,
   );
   const [loading, setLoading] = useState(false);
 
@@ -59,13 +61,13 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
           .eq("user_id", u.user.id).eq("role", "admin").maybeSingle();
         if (!roleRow) {
           await supabase.auth.signOut();
-          setErr("Access denied. Your account is not authorized as an admin.");
+          setErr(t("err_access_denied"));
           return;
         }
       }
       navigate({ to: "/", replace: true });
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "Something went wrong");
+      setErr(e instanceof Error ? e.message : t("err_generic"));
     } finally {
       setLoading(false);
     }
@@ -146,18 +148,18 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
             <div className="lp-input-group" style={{ position: "relative" }}>
               <label>Name</label>
               <i className="fa-solid fa-user" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
-              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder="Librarian name" />
+              <input type="text" required value={name} onChange={(e) => setName(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_lib_name")} />
             </div>
           )}
           <div className="lp-input-group" style={{ position: "relative" }}>
             <label>Email</label>
             <i className="fa-solid fa-envelope" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder="you@example.com" />
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_email")} />
           </div>
           <div className="lp-input-group" style={{ position: "relative" }}>
             <label>Password</label>
             <i className="fa-solid fa-lock" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
-            <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder="••••••••" />
+            <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_password")} />
           </div>
           <button
             type="submit"
@@ -174,7 +176,7 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
             }}
           >
             {loading
-              ? "Please wait…"
+              ? t("please_wait")
               : mode === "signin"
                 ? "Sign In"
                 : "Create Librarian"}
