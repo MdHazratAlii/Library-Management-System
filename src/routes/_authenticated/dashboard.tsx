@@ -949,7 +949,7 @@ export function Dashboard() {
       {modal === "category" && <CategoryModal data={editData as Category | null} onClose={close} onSave={saveCat} />}
       {modal === "student" && <StudentModal data={editData as Student | null} students={students} onClose={close} onSave={saveStudent} />}
       {modal === "student-view" && <StudentViewModal student={editData as unknown as Student} issues={issues} fines={fines} bookMap={bookMap} onClose={close} />}
-      {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} onClose={close} onSave={saveIssue} />}
+      {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} issues={issues} maxIssues={getSettings().maxIssuesPerStudent} onClose={close} onSave={saveIssue} />}
       {modal === "issue-edit" && <IssueEditModal issue={editData as unknown as Issue} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveIssueEdit} />}
       {modal === "fine" && <FineModal data={editData as Fine | null} issues={issues} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveFine} />}
     </div>
@@ -1415,17 +1415,19 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
   );
 }
 
-function IssueModal({ books, students, onClose, onSave }: { books: Book[]; students: Student[]; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
+function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { books: Book[]; students: Student[]; issues: Issue[]; maxIssues: number; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
   const [book_id, setB] = useState<number>(books[0]?.id ?? 0);
   const [student_id, setS] = useState<number>(students[0]?.id ?? 0);
   const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   const [due_date, setD] = useState<string>(in7);
+  const activeCount = issues.filter((i) => i.student_id === student_id && i.status === "Issued").length;
+  const atLimit = activeCount >= maxIssues;
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-right-left" /> Issue Book</h2>
-        <form onSubmit={(e) => { e.preventDefault(); if (book_id == null || student_id == null || Number.isNaN(book_id) || Number.isNaN(student_id)) return; onSave({ book_id, student_id, due_date }); }}>
+        <form onSubmit={(e) => { e.preventDefault(); if (book_id == null || student_id == null || Number.isNaN(book_id) || Number.isNaN(student_id)) return; if (atLimit) return; onSave({ book_id, student_id, due_date }); }}>
           <div className="lp-input-group">
             <label>Book</label>
             <select required value={book_id} onChange={(e) => setB(Number(e.target.value))}>
@@ -1441,7 +1443,13 @@ function IssueModal({ books, students, onClose, onSave }: { books: Book[]; stude
             </select>
           </div>
           <div className="lp-input-group"><label>Due Date</label><input type="date" required value={due_date} onChange={(e) => setD(e.target.value)} /></div>
-          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>Issue Book</button>
+          {atLimit && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "10px 12px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
+              This student already has {activeCount} active issue(s). Maximum allowed is {maxIssues}.
+            </div>
+          )}
+          <button type="submit" disabled={atLimit} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12, opacity: atLimit ? 0.6 : 1, cursor: atLimit ? "not-allowed" : "pointer" }}>Issue Book</button>
         </form>
       </div>
     </div>
