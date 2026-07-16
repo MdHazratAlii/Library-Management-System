@@ -1,0 +1,114 @@
+PROPRIETARY SOURCE-AVAILABLE LICENSE
+
+Copyright (c) 2026 MD. HAZRAT ALI. All Rights Reserved.
+
+1. DEFINITIONS
+   "Software" means the source code, object code, documentation, assets,
+   and any related materials made available in this repository.
+   "Licensor" means MD. HAZRAT ALI, the sole copyright holder
+   of the Software.
+   "You" (or "Licensee") means any individual who accesses, views, or
+   runs the Software under the terms of this License.
+
+2. ALL RIGHTS RESERVED
+   The Software is the exclusive property of the Licensor and is
+   protected by copyright laws and international treaty provisions. All
+   rights, title, and interest in and to the Software, including all
+   intellectual property rights, are and shall remain the sole and
+   exclusive property of the Licensor. No rights are granted to You
+   except as expressly set forth in this License.
+
+3. GRANT OF LIMITED LICENSE (PERMITTED USE)
+   Subject to Your strict compliance with every term of this License,
+   the Licensor grants You a personal, non-exclusive, non-transferable,
+   non-sublicensable, revocable, royalty-free license to:
+   (a) view and read the source code of the Software; and
+   (b) download and run the Software solely for private, personal,
+       non-commercial use on hardware that You own or control.
+
+4. PROHIBITION ON MODIFICATION AND DERIVATIVE WORKS
+   You may NOT, in whole or in part, directly or indirectly:
+   (a) edit, alter, adapt, translate, or otherwise modify the Software;
+   (b) create derivative works based on the Software;
+   (c) merge or incorporate the Software into any other software,
+       product, or service;
+   (d) reverse engineer, decompile, or disassemble the Software except
+       to the extent such activity is expressly permitted by applicable
+       law notwithstanding this limitation; or
+   (e) remove, obscure, or alter any copyright, trademark, or other
+       proprietary notices contained in the Software.
+
+5. PROHIBITION ON COMMERCIAL USE
+   You may NOT, in whole or in part, directly or indirectly:
+   (a) use the Software for any commercial purpose or for the benefit
+       of any business, enterprise, or organization;
+   (b) sell, resell, rent, lease, lend, sublicense, distribute,
+       publish, host as a service, or otherwise transfer the Software
+       or any copy thereof to any third party;
+   (c) charge any fee for, or generate any revenue from, access to,
+       use of, or performance of the Software;
+   (d) use the Software to provide services to third parties, whether
+       or not for a fee; or
+   (e) use the Software in any production, revenue-generating,
+       for-profit, or business-operations environment.
+   Any commercial use requires a separate, prior, written commercial
+   license agreement executed with the Licensor.
+
+6. RESERVATION OF RIGHTS
+   All rights not expressly granted to You in this License are reserved
+   by the Licensor. No implied licenses are granted under this License,
+   whether by estoppel, exhaustion, or otherwise.
+
+7. TERMINATION
+   This License is effective until terminated. Your rights under this
+   License will terminate automatically and without notice if You fail
+   to comply with any term of it. Upon termination, You must
+   immediately cease all use of the Software and destroy all copies of
+   the Software in Your possession or control. Sections 2, 4, 5, 6, 9,
+   10, and 11 survive termination.
+
+8. NO SUPPORT
+   The Licensor is under no obligation to provide maintenance,
+   support, updates, enhancements, or modifications for the Software.
+
+9. DISCLAIMER OF WARRANTIES
+   THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITH ALL
+   FAULTS, AND WITHOUT WARRANTY OF ANY KIND. TO THE MAXIMUM EXTENT
+   PERMITTED BY APPLICABLE LAW, THE LICENSOR DISCLAIMS ALL WARRANTIES,
+   EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT
+   LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+   PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, QUIET
+   ENJOYMENT, OR THAT THE SOFTWARE WILL BE UNINTERRUPTED, ERROR-FREE,
+   OR FREE OF HARMFUL COMPONENTS. YOU ASSUME THE ENTIRE RISK ARISING
+   OUT OF THE USE OR PERFORMANCE OF THE SOFTWARE.
+
+10. LIMITATION OF LIABILITY
+    TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT
+    SHALL THE LICENSOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, CONSEQUENTIAL, OR PUNITIVE DAMAGES (INCLUDING
+    WITHOUT LIMITATION LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR
+    BUSINESS INTERRUPTION) ARISING OUT OF OR RELATING TO THIS LICENSE
+    OR THE USE OF OR INABILITY TO USE THE SOFTWARE, WHETHER BASED ON
+    CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR ANY
+    OTHER LEGAL THEORY, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGES.
+
+11. GOVERNING LAW
+    This License shall be governed by and construed in accordance with
+    the laws of BANGLADESH, without regard to its conflict-of-laws
+    principles. Any dispute arising out of or in connection with this
+    License shall be subject to the exclusive jurisdiction of the
+    courts located in BANGLADESH.
+
+12. ENTIRE AGREEMENT; SEVERABILITY
+    This License constitutes the entire agreement between You and the
+    Licensor concerning the Software and supersedes all prior or
+    contemporaneous communications. If any provision of this License
+    is held unenforceable, the remaining provisions shall continue in
+    full force and effect.
+
+13. CONTACT
+    For commercial licensing inquiries or permissions beyond the scope
+    of this License, contact: hazrat@duck.com
+
+END OF LICENSE
