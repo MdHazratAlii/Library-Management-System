@@ -288,7 +288,7 @@ export function Dashboard() {
   };
 
   const saveIssue = async (form: { book_id: number; student_id: number; due_date: string }) => {
-    if (!form.book_id || !form.student_id) { alert("Select a book and a student."); return; }
+    if (form.book_id == null || form.student_id == null || Number.isNaN(form.book_id) || Number.isNaN(form.student_id)) { alert("Select a book and a student."); return; }
     const b = bookMap[form.book_id];
     if (!b || (b.available ?? 0) <= 0) { alert("Book not available"); return; }
     const ins = await supabase
