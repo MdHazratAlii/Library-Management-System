@@ -291,6 +291,12 @@ export function Dashboard() {
     if (form.book_id == null || form.student_id == null || Number.isNaN(form.book_id) || Number.isNaN(form.student_id)) { alert("Select a book and a student."); return; }
     const b = bookMap[form.book_id];
     if (!b || (b.available ?? 0) <= 0) { alert("Book not available"); return; }
+    const maxIssues = getSettings().maxIssuesPerStudent;
+    const activeCount = issues.filter((i) => i.student_id === form.student_id && i.status === "Issued").length;
+    if (activeCount >= maxIssues) {
+      alert(`This student already has ${activeCount} active issue(s). Maximum allowed is ${maxIssues}.`);
+      return;
+    }
     const ins = await supabase
       .from("book_issues")
       .insert({ book_id: form.book_id, student_id: form.student_id, due_date: form.due_date, status: "Issued", issue_date: todayISO() });
