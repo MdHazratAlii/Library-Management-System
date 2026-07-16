@@ -970,6 +970,7 @@ const STAT_TONES: Record<StatTone, { bg: string; icoBg: string; icoColor: string
   money:   { bg: "linear-gradient(135deg,#ffe4ef 0%,#fff1f6 100%)", icoBg: "rgba(255,120,170,0.22)", icoColor: "#b6316b", border: "rgba(255,120,170,0.30)" },
 };
 function StatCard({ tone, icon, num, lbl }: { tone: StatTone; icon: string; num: number | string; lbl: string }) {
+  const { t } = useLang();
   const t = STAT_TONES[tone];
   return (
     <div className="lp-card-stat" style={{ background: t.bg, borderColor: t.border }}>
@@ -1185,6 +1186,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
 }
 
 function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Book | null; onClose: () => void; onSave: (b: Book) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
@@ -1235,6 +1237,7 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
 }
 
 function CategoryModal({ data, onClose, onSave }: { data: Category | null; onClose: () => void; onSave: (c: Category) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Category>({ id: data?.id ?? 0, name: data?.name ?? "", descr: data?.descr ?? "" });
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
@@ -1429,6 +1432,7 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
 }
 
 function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { books: Book[]; students: Student[]; issues: Issue[]; maxIssues: number; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
+  const { t } = useLang();
   const [book_id, setB] = useState<number>(books[0]?.id ?? 0);
   const [student_id, setS] = useState<number>(students[0]?.id ?? 0);
   const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
@@ -1470,6 +1474,7 @@ function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { b
 }
 
 function IssueEditModal({ issue, bookMap, studentMap, onClose, onSave }: { issue: Issue; bookMap: Record<number, Book>; studentMap: Record<number, Student>; onClose: () => void; onSave: (v: Issue) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Issue>({ ...issue });
   const b = bookMap[f.book_id]; const s = studentMap[f.student_id];
   return (
