@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -90,37 +91,47 @@ export function InstallPrompt() {
     }
   };
 
+  return <InstallCard iosHint={iosHint} deferred={deferred} install={install} dismiss={dismiss} />;
+}
+
+function InstallCard({
+  iosHint, deferred, install, dismiss,
+}: {
+  iosHint: boolean;
+  deferred: BIPEvent | null;
+  install: () => void | Promise<void>;
+  dismiss: () => void;
+}) {
+  const { t } = useLang();
   return (
-    <div className="lp-install-card" role="dialog" aria-label="Install Library Pro">
+    <div className="lp-install-card" role="dialog" aria-label={t("install_title")}>
       <div className="lp-install-icon" aria-hidden="true">
         <img src="/icon-192.png" alt="" width={40} height={40} />
       </div>
       <div className="lp-install-body">
-        <div className="lp-install-title">Install Library Pro</div>
+        <div className="lp-install-title">{t("install_title")}</div>
         {iosHint ? (
           <div className="lp-install-desc">
-            Tap <i className="fa-solid fa-arrow-up-from-bracket" /> Share, then{" "}
-            <strong>Add to Home Screen</strong>.
+            {t("install_desc_ios_a")} <i className="fa-solid fa-arrow-up-from-bracket" /> {t("install_desc_ios_b")}{" "}
+            <strong>{t("install_desc_ios_c")}</strong>.
           </div>
         ) : (
-          <div className="lp-install-desc">
-            Add to your home screen for a faster, full-screen experience.
-          </div>
+          <div className="lp-install-desc">{t("install_desc")}</div>
         )}
       </div>
       <div className="lp-install-actions">
         {!iosHint && deferred && (
           <button type="button" className="lp-install-btn primary" onClick={install}>
-            Install
+            {t("install_btn")}
           </button>
         )}
         <button
           type="button"
           className="lp-install-btn ghost"
           onClick={dismiss}
-          aria-label="Dismiss install prompt"
+          aria-label={t("install_dismiss")}
         >
-          {iosHint ? "Got it" : "Not now"}
+          {iosHint ? t("install_got_it") : t("install_dismiss")}
         </button>
       </div>
     </div>

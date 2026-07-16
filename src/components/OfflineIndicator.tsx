@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 export function OfflineIndicator() {
+  const { t } = useLang();
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export function OfflineIndicator() {
       <span className="lp-offline-dot" aria-hidden="true">
         <i className="fa-solid fa-wifi-slash" />
       </span>
-      <span>You&rsquo;re offline &mdash; showing cached data</span>
+      <span>{t("offline_status")}</span>
     </div>
   );
 }
