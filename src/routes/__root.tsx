@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { registerAppSW } from "../lib/register-sw";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { InstallPrompt } from "../components/InstallPrompt";
+import { DevInfoPopup } from "../components/DevInfoPopup";
 
 function NotFoundComponent() {
   return (
@@ -152,6 +153,7 @@ function RootComponent() {
       <Outlet />
       <OfflineIndicator />
       <InstallPrompt />
+      <DevInfoPopup />
     </QueryClientProvider>
   );
 }
