@@ -245,6 +245,9 @@ export function Dashboard() {
   const [modal, setModal] = useState<null | "book" | "category" | "student" | "student-view" | "issue" | "issue-edit" | "fine">(null);
   const [editData, setEditData] = useState<Record<string, unknown> | null>(null);
 
+  // Confirmation dialog state
+  const [confirmState, setConfirmState] = useState<null | { message: string; onConfirm: () => void | Promise<void>; confirmLabel?: string; danger?: boolean }>(null);
+
   const openBook = (d: Book | null = null) => { setEditData(d as never); setModal("book"); };
   const openCat = (d: Category | null = null) => { setEditData(d as never); setModal("category"); };
   const openStudent = (d: Student | null = null) => { setEditData(d as never); setModal("student"); };
@@ -336,9 +339,14 @@ export function Dashboard() {
   };
 
   const payFine = async (id: number) => {
-    if (!confirm(t("confirm_mark_paid"))) return;
-    await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
-    loadAll();
+    setConfirmState({
+      message: t("confirm_mark_paid"),
+      confirmLabel: t("btn_mark_paid"),
+      onConfirm: async () => {
+        await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
+        loadAll();
+      },
+    });
   };
 
   const saveIssueEdit = async (form: Issue) => {
@@ -958,6 +966,19 @@ export function Dashboard() {
       {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} issues={issues} catMap={catMap} maxIssues={getSettings().maxIssuesPerStudent} onClose={close} onSave={saveIssue} />}
       {modal === "issue-edit" && <IssueEditModal issue={editData as unknown as Issue} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveIssueEdit} />}
       {modal === "fine" && <FineModal data={editData as Fine | null} issues={issues} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveFine} />}
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          danger={confirmState.danger}
+          onCancel={() => setConfirmState(null)}
+          onConfirm={async () => {
+            const fn = confirmState.onConfirm;
+            setConfirmState(null);
+            await fn();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -1235,6 +1256,24 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
           />
           <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>{t("btn_save_book")}</button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmModal({ message, confirmLabel, danger, onCancel, onConfirm }: { message: string; confirmLabel?: string; danger?: boolean; onCancel: () => void; onConfirm: () => void | Promise<void> }) {
+  const { t } = useLang();
+  return (
+    <div className="lp-modal-overlay" onClick={onCancel}>
+      <div className="lp-modal" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>
+          <i className={`fa-solid ${danger ? "fa-triangle-exclamation" : "fa-circle-question"}`} style={{ marginRight: 8, color: danger ? "#c0392b" : "#7a4bcc" }} />
+          {message}
+        </h2>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+          <button type="button" className="lp-btn" onClick={onCancel}>{t("ui_cancel")}</button>
+          <button type="button" className={`lp-btn ${danger ? "lp-btn-danger" : "lp-btn-primary"}`} onClick={() => { void onConfirm(); }}>{confirmLabel || "OK"}</button>
+        </div>
       </div>
     </div>
   );
