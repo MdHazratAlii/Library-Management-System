@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthPage } from "./auth";
-import { Dashboard } from "@/components/LibraryDashboard";
+
+const Dashboard = lazy(() =>
+  import("@/components/LibraryDashboard").then((module) => ({ default: module.Dashboard })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Library Pro — Library Management System" }] }),
@@ -94,7 +97,13 @@ function Index() {
         data-leaving={transitioning ? "true" : "false"}
         style={{ animation: "lpAppIn .5s ease-out both" }}
       >
-        {displayed === "admin" ? <Dashboard /> : <AuthPage denied={denied} />}
+        {displayed === "admin" ? (
+          <Suspense fallback={<Splash />}>
+            <Dashboard />
+          </Suspense>
+        ) : (
+          <AuthPage denied={denied} />
+        )}
       </div>
     </>
   );
