@@ -286,39 +286,39 @@ export function Dashboard() {
   };
 
   const saveIssue = async (form: { book_id: number; student_id: number; due_date: string }) => {
-    if (form.book_id == null || form.student_id == null || Number.isNaN(form.book_id) || Number.isNaN(form.student_id)) { alert("Select a book and a student."); return; }
+    if (form.book_id == null || form.student_id == null || Number.isNaN(form.book_id) || Number.isNaN(form.student_id)) { alert(t("err_select_book_student")); return; }
     const b = bookMap[form.book_id];
-    if (!b || (b.available ?? 0) <= 0) { alert("Book not available"); return; }
+    if (!b || (b.available ?? 0) <= 0) { alert(t("err_book_unavailable")); return; }
     const maxIssues = getSettings().maxIssuesPerStudent;
     const activeCount = issues.filter((i) => i.student_id === form.student_id && i.status === "Issued").length;
     if (activeCount >= maxIssues) {
-      alert(`This student already has ${activeCount} active issue(s). Maximum allowed is ${maxIssues}.`);
+      alert(t("err_max_issues", { count: activeCount, max: maxIssues }));
       return;
     }
     const ins = await supabase
       .from("book_issues")
       .insert({ book_id: form.book_id, student_id: form.student_id, due_date: form.due_date, status: "Issued", issue_date: todayISO() });
     if (ins.error) {
-      alert(`Could not issue book: ${ins.error.message}\n\nMake sure your account has the admin role (run bootstrap_admin from the auth page).`);
+      alert(t("err_issue_failed", { msg: ins.error.message }));
       return;
     }
     const upd = await supabase.from("books").update({ available: (b.available ?? 0) - 1 }).eq("id", b.id);
-    if (upd.error) alert(`Issued, but stock update failed: ${upd.error.message}`);
+    if (upd.error) alert(t("err_stock_update", { msg: upd.error.message }));
     close(); loadAll();
   };
 
   const del = async (table: "books" | "categories" | "students", id: number) => {
     if (table === "books") {
       const b = bookMap[id]; if (!b) return;
-      if (b.qty !== b.available) { alert("Cannot delete: some copies are issued."); return; }
+      if (b.qty !== b.available) { alert(t("err_delete_book_issued")); return; }
     }
     if (table === "categories") {
-      if (books.some((b) => b.cat_id === id)) { alert("Cannot delete: books are using this category."); return; }
+      if (books.some((b) => b.cat_id === id)) { alert(t("err_delete_cat_used")); return; }
     }
     if (table === "students") {
-      if (issues.some((i) => i.student_id === id && i.status === "Issued")) { alert("Cannot delete: student has active issues."); return; }
+      if (issues.some((i) => i.student_id === id && i.status === "Issued")) { alert(t("err_delete_student_active")); return; }
     }
-    if (!confirm("Delete this item?")) return;
+    if (!confirm(t("confirm_delete_item"))) return;
     await supabase.from(table).delete().eq("id", id);
     loadAll();
   };
@@ -336,7 +336,7 @@ export function Dashboard() {
   };
 
   const payFine = async (id: number) => {
-    if (!confirm("Mark this fine as paid?")) return;
+    if (!confirm(t("confirm_mark_paid"))) return;
     await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
     loadAll();
   };
@@ -358,7 +358,7 @@ export function Dashboard() {
   };
 
   const delIssue = async (i: Issue) => {
-    if (!confirm("Delete this issue record? Related fines will also be removed.")) return;
+    if (!confirm(t("confirm_delete_issue"))) return;
     await supabase.from("fines").delete().eq("issue_id", i.id);
     await supabase.from("book_issues").delete().eq("id", i.id);
     if (i.status === "Issued") {
@@ -378,7 +378,7 @@ export function Dashboard() {
   };
 
   const delFine = async (id: number) => {
-    if (!confirm("Delete this fine?")) return;
+    if (!confirm(t("confirm_delete_fine"))) return;
     await supabase.from("fines").delete().eq("id", id);
     loadAll();
   };
@@ -573,7 +573,7 @@ export function Dashboard() {
                   {loading ? (
                     <ChartSkeleton kind="bar" />
                   ) : stat_b + stat_i + stat_r + stat_o === 0 ? (
-                    <EmptyState icon="fa-chart-column" title="No activity yet" sub="Add books and issues to see the overview." />
+                    <EmptyState icon="fa-chart-column" title={t("empty_no_activity")} sub={t("empty_no_activity_sub")} />
                   ) : (
                     <ResponsiveContainer width="100%" height={260}>
                       <BarChart data={[
@@ -596,7 +596,7 @@ export function Dashboard() {
                   {loading ? (
                     <ChartSkeleton kind="pie" />
                   ) : catCounts.length === 0 || catCounts.every((c) => c.count === 0) ? (
-                    <EmptyState icon="fa-tags" title="No categories yet" sub="Create categories and books to build this chart." />
+                    <EmptyState icon="fa-tags" title={t("empty_no_cat_chart")} sub={t("empty_no_cat_chart_sub")} />
                   ) : (
                     <div style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
@@ -630,7 +630,7 @@ export function Dashboard() {
                   <button className="lp-btn lp-btn-purple" onClick={() => openBook(null)}><i className="fa-solid fa-plus" /> Add New Book</button>
                 </div>} />
               <FilterBar>
-                <SearchInput value={qBooks} onChange={setQBooks} placeholder="Filter books by title, ISBN…" />
+                <SearchInput value={qBooks} onChange={setQBooks} placeholder={t("ph_filter_books")} />
                 <select value={catFilter} onChange={(e) => setCatFilter(e.target.value === "all" ? "all" : Number(e.target.value))} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
                   <option value="all">All Categories</option>
                   {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -661,7 +661,7 @@ export function Dashboard() {
                         </td>
                       </tr>
                     ))}
-                     {filteredBooks.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{books.length === 0 ? "No books yet." : "No books match your search."}</td></tr>}
+                     {filteredBooks.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{books.length === 0 ? t("empty_no_books") : t("empty_no_books_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -684,7 +684,7 @@ export function Dashboard() {
                   <button className="lp-btn lp-btn-purple" onClick={() => openCat(null)}><i className="fa-solid fa-plus" /> Add Category</button>
                 </div>} />
               <FilterBar>
-                <SearchInput value={qCats} onChange={setQCats} placeholder="Filter categories…" />
+                <SearchInput value={qCats} onChange={setQCats} placeholder={t("ph_filter_cats")} />
                 <ResultCount n={filteredCats.length} total={cats.length} />
               </FilterBar>
               <div className="lp-table-wrap">
@@ -705,7 +705,7 @@ export function Dashboard() {
                         </tr>
                       );
                     })}
-                    {filteredCats.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{cats.length === 0 ? "No categories yet." : "No categories match your search."}</td></tr>}
+                    {filteredCats.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{cats.length === 0 ? t("empty_no_cats") : t("empty_no_cats_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -728,7 +728,7 @@ export function Dashboard() {
                   <button className="lp-btn lp-btn-purple" onClick={() => openStudent(null)}><i className="fa-solid fa-plus" /> Add Student</button>
                 </div>} />
               <FilterBar>
-                <SearchInput value={qStudents} onChange={setQStudents} placeholder="Filter students by name, ID, email, phone…" />
+                <SearchInput value={qStudents} onChange={setQStudents} placeholder={t("ph_filter_students")} />
                 <ResultCount n={filteredStudents.length} total={students.length} />
               </FilterBar>
               <div className="lp-table-wrap">
@@ -755,7 +755,7 @@ export function Dashboard() {
                         </td>
                       </tr>
                     ))}
-                    {filteredStudents.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{students.length === 0 ? "No students yet." : "No students match your search."}</td></tr>}
+                    {filteredStudents.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{students.length === 0 ? t("empty_no_students") : t("empty_no_students_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -784,7 +784,7 @@ export function Dashboard() {
                 <StatCard tone="money" icon="fa-book" num={books.reduce((a, b) => a + (b.available || 0), 0)} lbl="Available Books" />
               </div>
               <FilterBar>
-                <SearchInput value={qIssues} onChange={setQIssues} placeholder="Filter by book, student, date…" />
+                <SearchInput value={qIssues} onChange={setQIssues} placeholder={t("ph_filter_issues")} />
                 <select value={issueStatus} onChange={(e) => setIssueStatus(e.target.value as typeof issueStatus)} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
                   <option value="all">All Statuses</option>
                   <option value="Issued">Issued</option>
@@ -812,7 +812,7 @@ export function Dashboard() {
                     [["Total Overdue", filteredOverdue.length], ["Total Days Late", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date), 0)], ["Estimated Fines (Tk)", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date) * 5, 0)]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
                 </div>} />
               <FilterBar>
-                <SearchInput value={qOverdue} onChange={setQOverdue} placeholder="Filter overdue by book or student…" />
+                <SearchInput value={qOverdue} onChange={setQOverdue} placeholder={t("ph_filter_overdue")} />
                 <ResultCount n={filteredOverdue.length} total={issues.filter(isOverdue).length} />
               </FilterBar>
               <div className="lp-table-wrap">
@@ -855,7 +855,7 @@ export function Dashboard() {
                   <button className="lp-btn lp-btn-purple" onClick={() => openFine(null)}><i className="fa-solid fa-plus" /> Add Fine</button>
                 </div>} />
               <FilterBar>
-                <SearchInput value={qFines} onChange={setQFines} placeholder="Filter fines by student, book, amount…" />
+                <SearchInput value={qFines} onChange={setQFines} placeholder={t("ph_filter_fines")} />
                 <select value={fineStatus} onChange={(e) => setFineStatus(e.target.value as typeof fineStatus)} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
                   <option value="all">All Statuses</option>
                   <option value="Unpaid">Unpaid</option>
@@ -887,7 +887,7 @@ export function Dashboard() {
                         </tr>
                       );
                     })}
-                    {filteredFines.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{fines.length === 0 ? "No fines." : "No fines match your search."}</td></tr>}
+                    {filteredFines.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{fines.length === 0 ? t("empty_no_fines") : t("empty_no_fines_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -1294,7 +1294,7 @@ function StudentModal({ data, students, onClose, onSave }: { data: Student | nul
           />
           <div className="lp-input-group">
             <label>Address</label>
-            <textarea rows={2} value={f.address || ""} onChange={(e) => setF({ ...f, address: e.target.value })} placeholder="Street, city, postal code…" style={{ width: "100%", padding: "10px 14px", borderRadius: 16, border: "1px solid var(--lp-border)", background: "#fff", fontSize: 13, fontFamily: "inherit", resize: "vertical" }} />
+            <textarea rows={2} value={f.address || ""} onChange={(e) => setF({ ...f, address: e.target.value })} placeholder={t("ph_address_short")} style={{ width: "100%", padding: "10px 14px", borderRadius: 16, border: "1px solid var(--lp-border)", background: "#fff", fontSize: 13, fontFamily: "inherit", resize: "vertical" }} />
           </div>
           <button type="submit" disabled={hasConflict} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12, opacity: hasConflict ? 0.5 : 1, cursor: hasConflict ? "not-allowed" : "pointer" }}>{hasConflict ? "Resolve conflicts to save" : "Save Student"}</button>
         </form>
@@ -1510,7 +1510,7 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
       <div className="lp-modal" style={{ maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-money-bill" /> {data ? "Edit Fine" : "Add Fine"}</h2>
-        <form onSubmit={(e) => { e.preventDefault(); if (!f.issue_id || !f.student_id) { alert("Select an issue"); return; } onSave(f); }}>
+        <form onSubmit={(e) => { e.preventDefault(); if (!f.issue_id || !f.student_id) { alert(t("err_select_issue")); return; } onSave(f); }}>
           <div className="lp-input-group">
             <label>Issue</label>
             <select required value={f.issue_id} onChange={(e) => setIssue(Number(e.target.value))}>
@@ -2006,11 +2006,11 @@ function SettingsView({ fines }: { fines: Fine[] }) {
               shape="circle"
             />
             {photoMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: photoMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: photoMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{photoMsg.text}</div>}
-            <div className="lp-input-group"><label>Librarian Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" /></div>
+            <div className="lp-input-group"><label>Librarian Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("ph_your_name")} /></div>
             <div className="lp-input-group"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
             <div style={{ display: "flex", gap: 12 }}>
-              <div className="lp-input-group" style={{ flex: 1 }}><label>New Password</label><input type="password" value={pw1} onChange={(e) => setPw1(e.target.value)} placeholder="Leave blank to keep" autoComplete="new-password" /></div>
-              <div className="lp-input-group" style={{ flex: 1 }}><label>Confirm Password</label><input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repeat new password" autoComplete="new-password" /></div>
+              <div className="lp-input-group" style={{ flex: 1 }}><label>New Password</label><input type="password" value={pw1} onChange={(e) => setPw1(e.target.value)} placeholder={t("ph_new_pw_keep")} autoComplete="new-password" /></div>
+              <div className="lp-input-group" style={{ flex: 1 }}><label>Confirm Password</label><input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder={t("ph_repeat_pw")} autoComplete="new-password" /></div>
             </div>
             {msg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: msg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: msg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{msg.text}</div>}
             <button type="submit" disabled={saving} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
@@ -2026,12 +2026,12 @@ function SettingsView({ fines }: { fines: Fine[] }) {
             <div className="lp-input-group">
               <label>Institute Name</label>
               <input value={sys.instituteName} maxLength={120}
-                onChange={(e) => setSys({ ...sys, instituteName: e.target.value })} placeholder="e.g. Springfield University" />
+                onChange={(e) => setSys({ ...sys, instituteName: e.target.value })} placeholder={t("ph_institute_eg")} />
             </div>
             <div className="lp-input-group">
               <label>Library Name</label>
               <input value={sys.libraryName} maxLength={120}
-                onChange={(e) => setSys({ ...sys, libraryName: e.target.value })} placeholder="e.g. Central Library" />
+                onChange={(e) => setSys({ ...sys, libraryName: e.target.value })} placeholder={t("ph_library_eg")} />
             </div>
             <ImageField
               label="Library Logo"
@@ -2044,7 +2044,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
             <div className="lp-input-group">
               <label>Address</label>
               <input value={sys.address} maxLength={300}
-                onChange={(e) => setSys({ ...sys, address: e.target.value })} placeholder="Street, City, Country" />
+                onChange={(e) => setSys({ ...sys, address: e.target.value })} placeholder={t("ph_address_full")} />
             </div>
             {instMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: instMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: instMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{instMsg.text}</div>}
             <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
