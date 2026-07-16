@@ -1167,7 +1167,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" className="lp-btn lp-btn-primary" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => inputRef.current?.click()}>
-              <i className={busy ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-upload"} /> {busy ? "Uploading…" : value ? "Replace" : "Upload"}
+              <i className={busy ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-upload"} /> {busy ? t("uploading") : value ? t("ui_replace") : t("ui_upload")}
             </button>
             {value && !busy && (
               <button type="button" className="lp-btn" style={{ padding: "8px 14px", background: "#f5f5f7" }} onClick={() => onChange("")}>
@@ -2025,7 +2025,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
             </div>
             {msg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: msg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: msg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{msg.text}</div>}
             <button type="submit" disabled={saving} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
-              <i className="fa-solid fa-floppy-disk" /> {saving ? "Saving…" : "Save Changes"}
+              <i className="fa-solid fa-floppy-disk" /> {saving ? t("saving") : t("btn_save_changes")}
             </button>
           </form>
         </div>
