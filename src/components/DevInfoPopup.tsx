@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 const DEV_INFO = {
   appName: "Library Pro",
@@ -12,6 +13,7 @@ const DEV_INFO = {
 
 export function DevInfoPopup() {
   const [visible, setVisible] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     const isTrigger = (e: KeyboardEvent) =>
@@ -54,14 +56,14 @@ export function DevInfoPopup() {
   const url = typeof window !== "undefined" ? window.location.href : "";
 
   const rows: Array<[string, React.ReactNode]> = [
-    ["App Name", DEV_INFO.appName],
-    ["Description", DEV_INFO.description],
-    ["Version", DEV_INFO.version],
-    ["Last Update", DEV_INFO.lastUpdate],
-    ["URL", url],
-    ["Developer", DEV_INFO.developer],
-    ["Email", DEV_INFO.email],
-    ["Website", DEV_INFO.website],
+    [t("dev_app_name"), DEV_INFO.appName],
+    [t("dev_description"), DEV_INFO.description],
+    [t("dev_version"), DEV_INFO.version],
+    [t("dev_last_update"), DEV_INFO.lastUpdate],
+    [t("dev_url"), url],
+    [t("dev_developer"), DEV_INFO.developer],
+    [t("dev_email"), DEV_INFO.email],
+    [t("dev_website"), DEV_INFO.website],
   ];
 
   return (
@@ -101,7 +103,7 @@ export function DevInfoPopup() {
             background: "#f8fafc",
           }}
         >
-          <strong style={{ fontSize: 16 }}>Developer Info</strong>
+          <strong style={{ fontSize: 16 }}>{t("dev_info_title")}</strong>
         </div>
         <div style={{ padding: "12px 18px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -133,7 +135,7 @@ export function DevInfoPopup() {
             </tbody>
           </table>
           <p style={{ marginTop: 10, color: "#94a3b8", fontSize: 11 }}>
-            Hold Ctrl/Cmd + Shift + D to view · release to hide
+            {t("dev_info_hint")}
           </p>
         </div>
       </div>
