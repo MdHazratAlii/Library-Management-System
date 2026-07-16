@@ -118,12 +118,10 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
             <i className="fa-solid fa-book" />
           </div>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: "var(--lp-text-dark)", margin: 0, letterSpacing: "-0.02em" }}>
-            {mode === "signin" ? "Welcome back" : "Create librarian account"}
+            {mode === "signin" ? t("auth_welcome_back") : t("auth_create_lib_h")}
           </h1>
           <p style={{ fontSize: 14, color: "var(--lp-text-light)", marginTop: 8 }}>
-            {mode === "signin"
-              ? "Sign in to Library Pro"
-              : "Set up the first librarian for Library Pro"}
+            {mode === "signin" ? t("auth_signin_sub") : t("auth_signup_sub")}
           </p>
         </div>
 
@@ -146,18 +144,18 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
         <form onSubmit={submit}>
           {mode === "signup" && (
             <div className="lp-input-group" style={{ position: "relative" }}>
-              <label>Name</label>
+              <label>{t("auth_lbl_name")}</label>
               <i className="fa-solid fa-user" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
               <input type="text" required value={name} onChange={(e) => setName(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_lib_name")} />
             </div>
           )}
           <div className="lp-input-group" style={{ position: "relative" }}>
-            <label>Email</label>
+            <label>{t("auth_lbl_email")}</label>
             <i className="fa-solid fa-envelope" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_email")} />
           </div>
           <div className="lp-input-group" style={{ position: "relative" }}>
-            <label>Password</label>
+            <label>{t("auth_lbl_password")}</label>
             <i className="fa-solid fa-lock" style={{ position: "absolute", left: 16, top: 42, color: "var(--lp-text-light)", fontSize: 13 }} />
             <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} style={{ paddingLeft: 42, borderRadius: 100 }} placeholder={t("ph_password")} />
           </div>
@@ -175,11 +173,7 @@ export function AuthPage({ denied }: { denied?: boolean } = {}) {
               boxShadow: "0 10px 24px -10px rgba(24, 240, 191, 0.6)",
             }}
           >
-            {loading
-              ? t("please_wait")
-              : mode === "signin"
-                ? "Sign In"
-                : "Create Librarian"}
+            {loading ? t("please_wait") : mode === "signin" ? t("auth_signin_btn") : t("auth_create_btn")}
           </button>
         </form>
 

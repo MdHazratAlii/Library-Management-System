@@ -513,7 +513,7 @@ export function Dashboard() {
               type="button"
               onClick={() => (isMobile ? setMobileOpen((v) => !v) : setCollapsed((v) => !v))}
               aria-label={isMobile ? (mobileOpen ? "Close menu" : "Open menu") : collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              title={isMobile ? "Menu" : collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={isMobile ? t("tip_menu") : collapsed ? t("tip_expand_sidebar") : t("tip_collapse_sidebar")}
               style={{ width: 44, height: 44, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", cursor: "pointer", color: "#181e15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
             >
               <i className={`fa-solid ${isMobile ? "fa-bars" : collapsed ? "fa-angles-right" : "fa-angles-left"}`} />
@@ -550,7 +550,7 @@ export function Dashboard() {
             <div className="lp-view">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
                 <h1 style={{ fontSize: 34, fontWeight: 600, display: "flex", alignItems: "center", gap: 12, letterSpacing: "-0.03em" }}>
-                  <i className="fa-solid fa-gauge-high" style={{ color: "#18f0bf", fontSize: 28 }} /> Dashboard
+                  <i className="fa-solid fa-gauge-high" style={{ color: "#18f0bf", fontSize: 28 }} /> {t("dashboard")}
                 </h1>
               </div>
               <div className="lp-grid-stats">
@@ -560,16 +560,16 @@ export function Dashboard() {
                   </>
                 ) : (
                   <>
-                    <StatCard tone="info" icon="fa-book" num={stat_b} lbl="Total Books" />
-                    <StatCard tone="active" icon="fa-right-left" num={issues.filter((i) => i.status === "Issued" || i.status === "Overdue" || isOverdue(i)).length} lbl="Issued Books" />
-                    <StatCard tone="warning" icon="fa-triangle-exclamation" num={stat_o} lbl="Overdue" />
-                    <StatCard tone="money" icon="fa-money-bill" num={`৳${stat_f}`} lbl="Fines" />
+                    <StatCard tone="info" icon="fa-book" num={stat_b} lbl={t("stat_total_books")} />
+                    <StatCard tone="active" icon="fa-right-left" num={issues.filter((i) => i.status === "Issued" || i.status === "Overdue" || isOverdue(i)).length} lbl={t("stat_issued_books")} />
+                    <StatCard tone="warning" icon="fa-triangle-exclamation" num={stat_o} lbl={t("status_overdue")} />
+                    <StatCard tone="money" icon="fa-money-bill" num={`৳${stat_f}`} lbl={t("stat_fines")} />
                   </>
                 )}
               </div>
               <div className="lp-grid-2">
                 <div className="lp-card" style={{ height: 320 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>Overview</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>{t("chart_overview")}</h3>
                   {loading ? (
                     <ChartSkeleton kind="bar" />
                   ) : stat_b + stat_i + stat_r + stat_o === 0 ? (
@@ -577,10 +577,10 @@ export function Dashboard() {
                   ) : (
                     <ResponsiveContainer width="100%" height={260}>
                       <BarChart data={[
-                        { name: "Total Books", v: stat_b, fill: CHART_TOKENS.lavender },
-                        { name: "Active Issues", v: stat_i, fill: CHART_TOKENS.aqua },
-                        { name: "Returned", v: stat_r, fill: CHART_TOKENS.mint },
-                        { name: "Overdue", v: stat_o, fill: CHART_TOKENS.ink },
+                        { name: t("chart_total_books"), v: stat_b, fill: CHART_TOKENS.lavender },
+                        { name: t("chart_active_issues"), v: stat_i, fill: CHART_TOKENS.aqua },
+                        { name: t("chart_returned"), v: stat_r, fill: CHART_TOKENS.mint },
+                        { name: t("chart_overdue"), v: stat_o, fill: CHART_TOKENS.ink },
                       ]}>
                         <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.border} />
                         <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: CHART_TOKENS.border }} tickLine={false} />
@@ -592,7 +592,7 @@ export function Dashboard() {
                   )}
                 </div>
                 <div className="lp-card" style={{ height: 320, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>Books by Category</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>{t("chart_books_by_category")}</h3>
                   {loading ? (
                     <ChartSkeleton kind="pie" />
                   ) : catCounts.length === 0 || catCounts.every((c) => c.count === 0) ? (
@@ -617,29 +617,29 @@ export function Dashboard() {
 
           {view === "books" && (
             <div className="lp-view">
-              <ViewHeader title="Books" icon="fa-book" btn={
+              <ViewHeader title={t("books")} icon="fa-book" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="lp-btn lp-btn-primary" onClick={() => exportTablePDF("Books", "books",
                     ["#", "Title", "ISBN", "Category", "Year", "Qty", "Available"],
                     filteredBooks.map((b) => [b.id, b.title, b.isbn || "—", catMap[b.cat_id || 0] || "—", b.pub_year, b.qty, b.available]),
-                    [["Total Titles", filteredBooks.length], ["Total Copies", filteredBooks.reduce((a, b) => a + (b.qty || 0), 0)], ["Available", filteredBooks.reduce((a, b) => a + (b.available || 0), 0)], ["Issued", filteredBooks.reduce((a, b) => a + ((b.qty || 0) - (b.available || 0)), 0)]])}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
+                    [["Total Titles", filteredBooks.length], ["Total Copies", filteredBooks.reduce((a, b) => a + (b.qty || 0), 0)], ["Available", filteredBooks.reduce((a, b) => a + (b.available || 0), 0)], ["Issued", filteredBooks.reduce((a, b) => a + ((b.qty || 0) - (b.available || 0)), 0)]])}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
                   <button className="lp-btn lp-btn-green" onClick={() => exportTableXLSX("Books", "books",
                     ["#", "Title", "ISBN", "Category", "Year", "Qty", "Available"],
                     filteredBooks.map((b) => [b.id, b.title, b.isbn || "—", catMap[b.cat_id || 0] || "—", b.pub_year, b.qty, b.available]),
-                    [["Total Titles", filteredBooks.length], ["Total Copies", filteredBooks.reduce((a, b) => a + (b.qty || 0), 0)], ["Available", filteredBooks.reduce((a, b) => a + (b.available || 0), 0)], ["Issued", filteredBooks.reduce((a, b) => a + ((b.qty || 0) - (b.available || 0)), 0)]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
-                  <button className="lp-btn lp-btn-purple" onClick={() => openBook(null)}><i className="fa-solid fa-plus" /> Add New Book</button>
+                    [["Total Titles", filteredBooks.length], ["Total Copies", filteredBooks.reduce((a, b) => a + (b.qty || 0), 0)], ["Available", filteredBooks.reduce((a, b) => a + (b.available || 0), 0)], ["Issued", filteredBooks.reduce((a, b) => a + ((b.qty || 0) - (b.available || 0)), 0)]])}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
+                  <button className="lp-btn lp-btn-purple" onClick={() => openBook(null)}><i className="fa-solid fa-plus" /> {t("btn_add_new_book")}</button>
                 </div>} />
               <FilterBar>
                 <SearchInput value={qBooks} onChange={setQBooks} placeholder={t("ph_filter_books")} />
                 <select value={catFilter} onChange={(e) => setCatFilter(e.target.value === "all" ? "all" : Number(e.target.value))} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
-                  <option value="all">All Categories</option>
+                  <option value="all">{t("filter_all_categories")}</option>
                   {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
                 <ResultCount n={filteredBooks.length} total={books.length} />
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th style={{ width: 64 }}>Cover</th><th>Title</th><th>Category</th><th>ISBN</th><th>Qty</th><th>Available</th><th>Actions</th></tr></thead>
+                  <thead><tr><th style={{ width: 64 }}>{t("tbl_cover")}</th><th>{t("tbl_title")}</th><th>{t("tbl_category")}</th><th>{t("tbl_isbn")}</th><th>{t("tbl_qty")}</th><th>{t("tbl_available")}</th><th>{t("ui_actions")}</th></tr></thead>
                   <tbody>
                      {pagedBooks.map((b) => (
                       <tr key={b.id}>
@@ -671,17 +671,17 @@ export function Dashboard() {
 
           {view === "categories" && (
             <div className="lp-view">
-              <ViewHeader title="Categories" icon="fa-tags" btn={
+              <ViewHeader title={t("categories")} icon="fa-tags" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="lp-btn lp-btn-primary" onClick={() => exportTablePDF("Categories", "categories",
                     ["#", "Name", "Description", "Books"],
                     filteredCats.map((c) => [c.id, c.name, c.descr || "—", books.filter((b) => b.cat_id === c.id).length]),
-                    [["Total Categories", filteredCats.length], ["Total Books", books.length], ["Uncategorized Books", books.filter((b) => !b.cat_id).length]])}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
+                    [["Total Categories", filteredCats.length], ["Total Books", books.length], ["Uncategorized Books", books.filter((b) => !b.cat_id).length]])}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
                   <button className="lp-btn lp-btn-green" onClick={() => exportTableXLSX("Categories", "categories",
                     ["#", "Name", "Description", "Books"],
                     filteredCats.map((c) => [c.id, c.name, c.descr || "—", books.filter((b) => b.cat_id === c.id).length]),
-                    [["Total Categories", filteredCats.length], ["Total Books", books.length], ["Uncategorized Books", books.filter((b) => !b.cat_id).length]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
-                  <button className="lp-btn lp-btn-purple" onClick={() => openCat(null)}><i className="fa-solid fa-plus" /> Add Category</button>
+                    [["Total Categories", filteredCats.length], ["Total Books", books.length], ["Uncategorized Books", books.filter((b) => !b.cat_id).length]])}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
+                  <button className="lp-btn lp-btn-purple" onClick={() => openCat(null)}><i className="fa-solid fa-plus" /> {t("btn_add_category")}</button>
                 </div>} />
               <FilterBar>
                 <SearchInput value={qCats} onChange={setQCats} placeholder={t("ph_filter_cats")} />
@@ -689,7 +689,7 @@ export function Dashboard() {
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th>Name</th><th>Description</th><th>Book Count</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>{t("tbl_name")}</th><th>{t("tbl_description")}</th><th>{t("tbl_book_count")}</th><th>{t("ui_actions")}</th></tr></thead>
                   <tbody>
                      {pagedCats.map((c) => {
                       const count = books.filter((b) => b.cat_id === c.id).length;
@@ -697,7 +697,7 @@ export function Dashboard() {
                         <tr key={c.id}>
                           <td style={{ fontWeight: 600 }}>{c.name}</td>
                           <td style={{ color: "#8990a2" }}>{c.descr || "—"}</td>
-                          <td><span className="lp-badge lp-badge-blue">{count} Books</span></td>
+                          <td><span className="lp-badge lp-badge-blue">{t("tbl_book_count_badge", { count })}</span></td>
                           <td>
                             <button className="lp-action-ico" onClick={() => openCat(c)}><i className="fa-solid fa-pen" /></button>
                             <button className="lp-action-ico" onClick={() => del("categories", c.id)}><i className="fa-solid fa-trash" /></button>
@@ -715,17 +715,17 @@ export function Dashboard() {
 
           {view === "students" && (
             <div className="lp-view">
-              <ViewHeader title="Students" icon="fa-user-graduate" btn={
+              <ViewHeader title={t("students")} icon="fa-user-graduate" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="lp-btn lp-btn-primary" onClick={() => exportTablePDF("Students", "students",
                     ["#", "Name", "Student ID", "Email", "Phone"],
                     filteredStudents.map((s) => [s.id, s.name, s.student_id, s.email || "—", s.phone || "—"]),
-                    [["Total Students", filteredStudents.length], ["With Email", filteredStudents.filter((s) => !!s.email).length], ["With Phone", filteredStudents.filter((s) => !!s.phone).length]])}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
+                    [["Total Students", filteredStudents.length], ["With Email", filteredStudents.filter((s) => !!s.email).length], ["With Phone", filteredStudents.filter((s) => !!s.phone).length]])}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
                   <button className="lp-btn lp-btn-green" onClick={() => exportTableXLSX("Students", "students",
                     ["#", "Name", "Student ID", "Email", "Phone"],
                     filteredStudents.map((s) => [s.id, s.name, s.student_id, s.email || "—", s.phone || "—"]),
-                    [["Total Students", filteredStudents.length], ["With Email", filteredStudents.filter((s) => !!s.email).length], ["With Phone", filteredStudents.filter((s) => !!s.phone).length]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
-                  <button className="lp-btn lp-btn-purple" onClick={() => openStudent(null)}><i className="fa-solid fa-plus" /> Add Student</button>
+                    [["Total Students", filteredStudents.length], ["With Email", filteredStudents.filter((s) => !!s.email).length], ["With Phone", filteredStudents.filter((s) => !!s.phone).length]])}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
+                  <button className="lp-btn lp-btn-purple" onClick={() => openStudent(null)}><i className="fa-solid fa-plus" /> {t("btn_add_student")}</button>
                 </div>} />
               <FilterBar>
                 <SearchInput value={qStudents} onChange={setQStudents} placeholder={t("ph_filter_students")} />
@@ -733,7 +733,7 @@ export function Dashboard() {
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th>Student</th><th>Student ID</th><th>Phone</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>{t("tbl_student")}</th><th>{t("tbl_student_id")}</th><th>{t("tbl_phone")}</th><th>{t("ui_actions")}</th></tr></thead>
                   <tbody>
                      {pagedStudents.map((s) => (
                       <tr key={s.id}>
@@ -749,7 +749,7 @@ export function Dashboard() {
         <td style={{ color: "#6b3fbf", fontWeight: 700 }}>{s.student_id}</td>
                         <td>{s.phone || "—"}</td>
                         <td>
-                          <button className="lp-action-ico" title="View details" onClick={() => viewStudent(s)}><i className="fa-solid fa-eye" /></button>
+                          <button className="lp-action-ico" title={t("ui_view_details")} onClick={() => viewStudent(s)}><i className="fa-solid fa-eye" /></button>
                           <button className="lp-action-ico" onClick={() => openStudent(s)}><i className="fa-solid fa-pen" /></button>
                           <button className="lp-action-ico" onClick={() => del("students", s.id)}><i className="fa-solid fa-trash" /></button>
                         </td>
@@ -765,31 +765,31 @@ export function Dashboard() {
 
           {view === "issues" && (
             <div className="lp-view">
-              <ViewHeader title="Book Issues" icon="fa-right-left" btn={
+              <ViewHeader title={t("issues")} icon="fa-right-left" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="lp-btn lp-btn-primary" onClick={() => exportTablePDF("Book Issues", "book-issues",
                     ["#", "Book", "Student", "Issue Date", "Due Date", "Status"],
                     filteredIssues.map((i) => [i.id, bookMap[i.book_id]?.title || "—", studentMap[i.student_id]?.name || "—", i.issue_date, i.due_date, i.status]),
-                    [["Total Issues", filteredIssues.length], ["Issued", filteredIssues.filter((i) => i.status === "Issued").length], ["Returned", filteredIssues.filter((i) => i.status === "Returned").length], ["Overdue", filteredIssues.filter((i) => i.status === "Overdue" || isOverdue(i)).length]])}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
+                    [["Total Issues", filteredIssues.length], ["Issued", filteredIssues.filter((i) => i.status === "Issued").length], ["Returned", filteredIssues.filter((i) => i.status === "Returned").length], ["Overdue", filteredIssues.filter((i) => i.status === "Overdue" || isOverdue(i)).length]])}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
                   <button className="lp-btn lp-btn-green" onClick={() => exportTableXLSX("Book Issues", "book-issues",
                     ["#", "Book", "Student", "Issue Date", "Due Date", "Status"],
                     filteredIssues.map((i) => [i.id, bookMap[i.book_id]?.title || "—", studentMap[i.student_id]?.name || "—", i.issue_date, i.due_date, i.status]),
-                    [["Total Issues", filteredIssues.length], ["Issued", filteredIssues.filter((i) => i.status === "Issued").length], ["Returned", filteredIssues.filter((i) => i.status === "Returned").length], ["Overdue", filteredIssues.filter((i) => i.status === "Overdue" || isOverdue(i)).length]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
-                  <button className="lp-btn lp-btn-purple" onClick={openIssue}><i className="fa-solid fa-plus" /> Issue Book</button>
+                    [["Total Issues", filteredIssues.length], ["Issued", filteredIssues.filter((i) => i.status === "Issued").length], ["Returned", filteredIssues.filter((i) => i.status === "Returned").length], ["Overdue", filteredIssues.filter((i) => i.status === "Overdue" || isOverdue(i)).length]])}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
+                  <button className="lp-btn lp-btn-purple" onClick={openIssue}><i className="fa-solid fa-plus" /> {t("btn_issue_book")}</button>
                 </div>} />
               <div className="lp-grid-stats">
-                <StatCard tone="active" icon="fa-right-left" num={issues.length} lbl="Total Issued" />
-                <StatCard tone="info" icon="fa-rotate-left" num={issues.filter((i) => i.status === "Returned").length} lbl="Total Returned" />
-                <StatCard tone="warning" icon="fa-triangle-exclamation" num={issues.filter((i) => i.status === "Overdue" || isOverdue(i)).length} lbl="Overdue" />
-                <StatCard tone="money" icon="fa-book" num={books.reduce((a, b) => a + (b.available || 0), 0)} lbl="Available Books" />
+                <StatCard tone="active" icon="fa-right-left" num={issues.length} lbl={t("stat_total_issued")} />
+                <StatCard tone="info" icon="fa-rotate-left" num={issues.filter((i) => i.status === "Returned").length} lbl={t("stat_total_returned")} />
+                <StatCard tone="warning" icon="fa-triangle-exclamation" num={issues.filter((i) => i.status === "Overdue" || isOverdue(i)).length} lbl={t("status_overdue")} />
+                <StatCard tone="money" icon="fa-book" num={books.reduce((a, b) => a + (b.available || 0), 0)} lbl={t("stat_available_books")} />
               </div>
               <FilterBar>
                 <SearchInput value={qIssues} onChange={setQIssues} placeholder={t("ph_filter_issues")} />
                 <select value={issueStatus} onChange={(e) => setIssueStatus(e.target.value as typeof issueStatus)} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
-                  <option value="all">All Statuses</option>
-                  <option value="Issued">Issued</option>
-                  <option value="Returned">Returned</option>
-                  <option value="Overdue">Overdue</option>
+                  <option value="all">{t("filter_all_statuses")}</option>
+                  <option value="Issued">{t("status_issued")}</option>
+                  <option value="Returned">{t("status_returned")}</option>
+                  <option value="Overdue">{t("status_overdue")}</option>
                 </select>
                 <ResultCount n={filteredIssues.length} total={issues.length} />
               </FilterBar>
@@ -800,16 +800,16 @@ export function Dashboard() {
 
           {view === "overdue" && (
             <div className="lp-view">
-              <ViewHeader title="Overdue Books" icon="fa-triangle-exclamation" btn={
+              <ViewHeader title={t("overdue_books")} icon="fa-triangle-exclamation" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button className="lp-btn lp-btn-primary" onClick={() => exportTablePDF("Overdue Books", "overdue",
                     ["#", "Book", "Student", "Due Date", "Days Late"],
                     filteredOverdue.map((i) => [i.id, bookMap[i.book_id]?.title || "—", studentMap[i.student_id]?.name || "—", i.due_date, daysBetween(i.due_date)]),
-                    [["Total Overdue", filteredOverdue.length], ["Total Days Late", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date), 0)], ["Estimated Fines (Tk)", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date) * 5, 0)]])}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
+                    [["Total Overdue", filteredOverdue.length], ["Total Days Late", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date), 0)], ["Estimated Fines (Tk)", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date) * 5, 0)]])}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
                   <button className="lp-btn lp-btn-green" onClick={() => exportTableXLSX("Overdue Books", "overdue",
                     ["#", "Book", "Student", "Due Date", "Days Late"],
                     filteredOverdue.map((i) => [i.id, bookMap[i.book_id]?.title || "—", studentMap[i.student_id]?.name || "—", i.due_date, daysBetween(i.due_date)]),
-                    [["Total Overdue", filteredOverdue.length], ["Total Days Late", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date), 0)], ["Estimated Fines (Tk)", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date) * 5, 0)]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
+                    [["Total Overdue", filteredOverdue.length], ["Total Days Late", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date), 0)], ["Estimated Fines (Tk)", filteredOverdue.reduce((a, i) => a + daysBetween(i.due_date) * 5, 0)]])}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
                 </div>} />
               <FilterBar>
                 <SearchInput value={qOverdue} onChange={setQOverdue} placeholder={t("ph_filter_overdue")} />
@@ -817,7 +817,7 @@ export function Dashboard() {
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th style={{ color: "#b3282b" }}>Book</th><th style={{ color: "#b3282b" }}>Student</th><th style={{ color: "#b3282b" }}>Due Date</th><th style={{ color: "#b3282b" }}>Days Late</th><th style={{ color: "#b3282b" }}>Est. Fine</th><th style={{ color: "#b3282b" }}>Actions</th></tr></thead>
+                  <thead><tr><th style={{ color: "#b3282b" }}>{t("tbl_book")}</th><th style={{ color: "#b3282b" }}>{t("tbl_student")}</th><th style={{ color: "#b3282b" }}>{t("tbl_due_date")}</th><th style={{ color: "#b3282b" }}>{t("tbl_days_late")}</th><th style={{ color: "#b3282b" }}>{t("tbl_est_fine")}</th><th style={{ color: "#b3282b" }}>{t("ui_actions")}</th></tr></thead>
                   <tbody>
                     {filteredOverdue.map((i) => {
                       const late = daysBetween(i.due_date);
@@ -827,19 +827,19 @@ export function Dashboard() {
                           <td>{b?.title || "—"}</td>
                           <td>{s?.name || "—"}</td>
                           <td style={{ color: "#b3282b", fontWeight: 700 }}>{i.due_date}</td>
-                          <td><span className="lp-badge lp-badge-red">-{late} days</span></td>
+                          <td><span className="lp-badge lp-badge-red">{t("tbl_days_late_badge", { n: late })}</span></td>
                            <td style={{ color: "#181e15", fontWeight: 700 }}>৳{late * getSettings().fineRate}</td>
                           <td>
                             <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                              <button className="lp-btn lp-btn-green" onClick={() => returnIssue(i)}>Return & Fine</button>
-                              <button className="lp-action-ico" title="Edit" onClick={() => openIssueEdit(i)}><i className="fa-solid fa-pen" /></button>
-                              <button className="lp-action-ico" title="Delete" onClick={() => delIssue(i)}><i className="fa-solid fa-trash" /></button>
+                              <button className="lp-btn lp-btn-green" onClick={() => returnIssue(i)}>{t("btn_return_fine")}</button>
+                              <button className="lp-action-ico" title={t("ui_edit")} onClick={() => openIssueEdit(i)}><i className="fa-solid fa-pen" /></button>
+                              <button className="lp-action-ico" title={t("ui_delete")} onClick={() => delIssue(i)}><i className="fa-solid fa-trash" /></button>
                             </div>
                           </td>
                         </tr>
                       );
                     })}
-                    {filteredOverdue.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>No overdue books match your search.</td></tr>}
+                    {filteredOverdue.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{t("empty_no_overdue_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -848,24 +848,24 @@ export function Dashboard() {
 
           {view === "fines" && (
             <div className="lp-view">
-              <ViewHeader title="Fines" icon="fa-money-bill" btn={
+              <ViewHeader title={t("fines")} icon="fa-money-bill" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button className="lp-btn lp-btn-primary" onClick={() => exportFinesPDF({ fines, studentMap, issueMap, bookMap })}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
-                  <button className="lp-btn lp-btn-green" onClick={() => exportFinesXLSX({ fines, studentMap, issueMap, bookMap })}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
-                  <button className="lp-btn lp-btn-purple" onClick={() => openFine(null)}><i className="fa-solid fa-plus" /> Add Fine</button>
+                  <button className="lp-btn lp-btn-primary" onClick={() => exportFinesPDF({ fines, studentMap, issueMap, bookMap })}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
+                  <button className="lp-btn lp-btn-green" onClick={() => exportFinesXLSX({ fines, studentMap, issueMap, bookMap })}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
+                  <button className="lp-btn lp-btn-purple" onClick={() => openFine(null)}><i className="fa-solid fa-plus" /> {t("btn_add_fine")}</button>
                 </div>} />
               <FilterBar>
                 <SearchInput value={qFines} onChange={setQFines} placeholder={t("ph_filter_fines")} />
                 <select value={fineStatus} onChange={(e) => setFineStatus(e.target.value as typeof fineStatus)} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
-                  <option value="all">All Statuses</option>
-                  <option value="Unpaid">Unpaid</option>
-                  <option value="Paid">Paid</option>
+                  <option value="all">{t("filter_all_statuses")}</option>
+                  <option value="Unpaid">{t("status_unpaid")}</option>
+                  <option value="Paid">{t("status_paid")}</option>
                 </select>
                 <ResultCount n={filteredFines.length} total={fines.length} />
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th>Student</th><th>Book</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                  <thead><tr><th>{t("tbl_student")}</th><th>{t("tbl_book")}</th><th>{t("tbl_amount")}</th><th>{t("tbl_status")}</th><th>{t("ui_action")}</th></tr></thead>
                   <tbody>
                     {filteredFines.map((f) => {
                       const s = studentMap[f.student_id];
@@ -879,9 +879,9 @@ export function Dashboard() {
                           <td><span className={`lp-badge ${f.status === "Paid" ? "lp-badge-green" : "lp-badge-red"}`}>{f.status}</span></td>
                           <td>
                             <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                              {f.status !== "Paid" && <button className="lp-btn lp-btn-primary" onClick={() => payFine(f.id)}>Mark Paid</button>}
-                              <button className="lp-action-ico" title="Edit" onClick={() => openFine(f)}><i className="fa-solid fa-pen" /></button>
-                              <button className="lp-action-ico" title="Delete" onClick={() => delFine(f.id)}><i className="fa-solid fa-trash" /></button>
+                              {f.status !== "Paid" && <button className="lp-btn lp-btn-primary" onClick={() => payFine(f.id)}>{t("btn_mark_paid")}</button>}
+                              <button className="lp-action-ico" title={t("ui_edit")} onClick={() => openFine(f)}><i className="fa-solid fa-pen" /></button>
+                              <button className="lp-action-ico" title={t("ui_delete")} onClick={() => delFine(f.id)}><i className="fa-solid fa-trash" /></button>
                             </div>
                           </td>
                         </tr>
@@ -896,21 +896,21 @@ export function Dashboard() {
 
           {view === "reports" && (
             <div className="lp-view">
-              <ViewHeader title="Reports" icon="fa-chart-line" btn={
+              <ViewHeader title={t("reports")} icon="fa-chart-line" btn={
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button className="lp-btn lp-btn-primary" onClick={() => exportAllReportsPDF({ stat_b, stat_i, stat_r, stat_o, stat_f, stat_u, books, cats, students, issues, fines, catMap, bookMap, studentMap, issueMap })}><i className="fa-solid fa-file-pdf" /> Export PDF</button>
-                  <button className="lp-btn lp-btn-green" onClick={() => exportAllReportsXLSX({ stat_b, stat_i, stat_r, stat_o, stat_f, stat_u, books, cats, students, issues, fines, catMap, bookMap, studentMap, issueMap })}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
+                  <button className="lp-btn lp-btn-primary" onClick={() => exportAllReportsPDF({ stat_b, stat_i, stat_r, stat_o, stat_f, stat_u, books, cats, students, issues, fines, catMap, bookMap, studentMap, issueMap })}><i className="fa-solid fa-file-pdf" /> {t("btn_export_pdf")}</button>
+                  <button className="lp-btn lp-btn-green" onClick={() => exportAllReportsXLSX({ stat_b, stat_i, stat_r, stat_o, stat_f, stat_u, books, cats, students, issues, fines, catMap, bookMap, studentMap, issueMap })}><i className="fa-solid fa-file-excel" /> {t("btn_export_xlsx")}</button>
                 </div>
               } />
               <div className="lp-grid-2" style={{ marginBottom: 16 }}>
                 <div className="lp-card" style={{ height: 320 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>Circulation Summary</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>{t("chart_circulation_summary")}</h3>
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={[
-                      { name: "Stock", v: stat_b, fill: CHART_TOKENS.lavender },
-                      { name: "Issued", v: stat_i, fill: CHART_TOKENS.aqua },
-                      { name: "Returned", v: stat_r, fill: CHART_TOKENS.mint },
-                      { name: "Overdue", v: stat_o, fill: CHART_TOKENS.ink },
+                      { name: t("chart_stock"), v: stat_b, fill: CHART_TOKENS.lavender },
+                      { name: t("chart_issued"), v: stat_i, fill: CHART_TOKENS.aqua },
+                      { name: t("chart_returned"), v: stat_r, fill: CHART_TOKENS.mint },
+                      { name: t("chart_overdue"), v: stat_o, fill: CHART_TOKENS.ink },
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" stroke={CHART_TOKENS.border} />
                       <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: CHART_TOKENS.border }} tickLine={false} />
@@ -921,7 +921,7 @@ export function Dashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div className="lp-card" style={{ height: 320, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>Books by Category</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.02em" }}>{t("chart_books_by_category")}</h3>
                   <div style={{ flex: 1, minHeight: 0 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -936,10 +936,10 @@ export function Dashboard() {
                 </div>
               </div>
               <div className="lp-card">
-                <ReportRow label="Total Book Stock" value={stat_b} />
-                <ReportRow label="Total Active Issues" value={stat_i} />
-                <ReportRow label="Total Books Overdue" value={stat_o} valueColor={CHART_TOKENS.ink} />
-                <ReportRow label="Total Revenue (Fines)" value={`৳${stat_f}`} valueColor={CHART_TOKENS.ink} last />
+                <ReportRow label={t("report_total_book_stock")} value={stat_b} />
+                <ReportRow label={t("report_total_active_issues")} value={stat_i} />
+                <ReportRow label={t("report_total_books_overdue")} value={stat_o} valueColor={CHART_TOKENS.ink} />
+                <ReportRow label={t("report_total_revenue_fines")} value={`৳${stat_f}`} valueColor={CHART_TOKENS.ink} last />
               </div>
             </div>
           )}
@@ -1055,6 +1055,7 @@ function FilterBar({ children }: { children: React.ReactNode }) {
 }
 
 function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  const { t } = useLang();
   return (
     <div style={{ position: "relative", flex: "1 1 260px", minWidth: 220 }}>
       <i className="fa-solid fa-magnifying-glass" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#6c6e79", fontSize: 12 }} />
@@ -1069,7 +1070,7 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
         <button
           type="button"
           onClick={() => onChange("")}
-          aria-label="Clear"
+          aria-label={t("ui_clear")}
           style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 24, height: 24, borderRadius: 100, border: "none", background: "transparent", cursor: "pointer", color: "#6c6e79" }}
         >
           <i className="fa-solid fa-xmark" />
@@ -1080,18 +1081,20 @@ function SearchInput({ value, onChange, placeholder }: { value: string; onChange
 }
 
 function ResultCount({ n, total }: { n: number; total: number }) {
+  const { t } = useLang();
   return (
     <span style={{ fontSize: 12, color: "#6c6e79", fontWeight: 500, marginLeft: "auto" }}>
-      {n === total ? `${total} total` : `${n} of ${total}`}
+      {n === total ? t("result_total", { total }) : t("result_of", { n, total })}
     </span>
   );
 }
 
 function IssuesTable({ issues, bookMap, studentMap, onReturn, onEdit, onDelete }: { issues: Issue[]; bookMap: Record<number, Book>; studentMap: Record<number, Student>; onReturn: (i: Issue) => void; onEdit: (i: Issue) => void; onDelete: (i: Issue) => void }) {
+  const { t } = useLang();
   return (
     <div className="lp-table-wrap">
       <table>
-        <thead><tr><th>Book</th><th>Student</th><th>Issue Date</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr><th>{t("tbl_book")}</th><th>{t("tbl_student")}</th><th>{t("tbl_issue_date")}</th><th>{t("tbl_due_date")}</th><th>{t("tbl_status")}</th><th>{t("ui_actions")}</th></tr></thead>
         <tbody>
           {issues.map((i) => {
             const late = daysBetween(i.due_date);
@@ -1104,23 +1107,23 @@ function IssuesTable({ issues, bookMap, studentMap, onReturn, onEdit, onDelete }
                 <td>{i.issue_date}</td>
                 <td style={{ color: overdue ? "#dc3545" : undefined, fontWeight: overdue ? 700 : undefined }}>{i.due_date}</td>
                 <td>
-                  {i.status === "Returned" ? <span className="lp-badge lp-badge-green">Returned</span> :
-                    overdue ? <span className="lp-badge lp-badge-red">Overdue (-{late}d)</span> :
-                    <span className="lp-badge lp-badge-blue">Issued</span>}
+                  {i.status === "Returned" ? <span className="lp-badge lp-badge-green">{t("status_returned")}</span> :
+                    overdue ? <span className="lp-badge lp-badge-red">{t("status_overdue_days", { n: late })}</span> :
+                    <span className="lp-badge lp-badge-blue">{t("status_issued")}</span>}
                 </td>
                 <td>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                     {i.status === "Returned" ? <span style={{ color: "#28a745" }}><i className="fa-solid fa-check" /></span> :
-                      overdue ? <button className="lp-btn lp-btn-danger" onClick={() => onReturn(i)}>Return & Fine</button> :
-                      <button className="lp-btn lp-btn-green" onClick={() => onReturn(i)}>Return</button>}
-                    <button className="lp-action-ico" title="Edit" onClick={() => onEdit(i)}><i className="fa-solid fa-pen" /></button>
-                    <button className="lp-action-ico" title="Delete" onClick={() => onDelete(i)}><i className="fa-solid fa-trash" /></button>
+                      overdue ? <button className="lp-btn lp-btn-danger" onClick={() => onReturn(i)}>{t("btn_return_fine")}</button> :
+                      <button className="lp-btn lp-btn-green" onClick={() => onReturn(i)}>{t("btn_return")}</button>}
+                    <button className="lp-action-ico" title={t("ui_edit")} onClick={() => onEdit(i)}><i className="fa-solid fa-pen" /></button>
+                    <button className="lp-action-ico" title={t("ui_delete")} onClick={() => onDelete(i)}><i className="fa-solid fa-trash" /></button>
                   </div>
                 </td>
               </tr>
             );
           })}
-          {issues.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>No issues yet.</td></tr>}
+          {issues.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{t("empty_no_issues")}</td></tr>}
         </tbody>
       </table>
     </div>
@@ -1129,6 +1132,7 @@ function IssuesTable({ issues, bookMap, studentMap, onReturn, onEdit, onDelete }
 
 /* Modals */
 function ImageField({ label, title, folder, value, onChange, shape }: { label: string; title: string; folder: "students" | "books" | "logos"; value: string; onChange: (url: string) => void; shape: "circle" | "rect" }) {
+  const { t } = useLang();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -1141,7 +1145,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
       const url = await uploadTitledImage(file, title || label, folder);
       onChange(url);
     } catch (e2) {
-      const msg = e2 instanceof Error ? e2.message : "Upload failed";
+      const msg = e2 instanceof Error ? e2.message : t("err_upload_failed");
       setErr(msg);
     } finally {
       setBusy(false);
@@ -1161,15 +1165,15 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" className="lp-btn lp-btn-primary" style={{ padding: "8px 14px" }} disabled={busy} onClick={() => inputRef.current?.click()}>
-              <i className={busy ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-upload"} /> {busy ? "Uploading…" : value ? "Replace" : "Upload"}
+              <i className={busy ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-upload"} /> {busy ? t("uploading") : value ? t("ui_replace") : t("ui_upload")}
             </button>
             {value && !busy && (
               <button type="button" className="lp-btn" style={{ padding: "8px 14px", background: "#f5f5f7" }} onClick={() => onChange("")}>
-                <i className="fa-solid fa-xmark" /> Remove
+                <i className="fa-solid fa-xmark" /> {t("ui_remove")}
               </button>
             )}
           </div>
-          <span style={{ fontSize: 11, color: "#8990a2" }}>Auto-converted to WebP, compressed, renamed with the title.</span>
+          <span style={{ fontSize: 11, color: "#8990a2" }}>{t("imgfield_note")}</span>
           {err && <span style={{ fontSize: 11, color: "#c0392b" }}>{err}</span>}
         </div>
         <input ref={inputRef} type="file" accept="image/*" onChange={onPick} style={{ display: "none" }} />
@@ -1179,49 +1183,50 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
 }
 
 function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Book | null; onClose: () => void; onSave: (b: Book) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-book" /> {data ? "Edit Book" : "Add Book"}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-book" /> {data ? t("modal_edit_book") : t("modal_add_book")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(data ? f : { ...f, id: 0 } as Book); }}>
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>ISBN</label>
+              <label>{t("tbl_isbn")}</label>
               <input value={f.isbn} onChange={(e) => setF({ ...f, isbn: e.target.value })} />
             </div>
             <div className="lp-input-group" style={{ flex: 2 }}>
-              <label>Title</label>
+              <label>{t("tbl_title")}</label>
               <input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
             </div>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 2 }}>
-              <label>Category</label>
+              <label>{t("tbl_category")}</label>
               <select value={f.cat_id ?? ""} onChange={(e) => setF({ ...f, cat_id: e.target.value ? Number(e.target.value) : null })}>
-                <option value="">— None —</option>
+                <option value="">{t("ui_none")}</option>
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Pub Year</label>
+              <label>{t("fld_pub_year")}</label>
               <input type="number" value={f.pub_year} onChange={(e) => setF({ ...f, pub_year: Number(e.target.value) })} />
             </div>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Quantity</label>
+              <label>{t("fld_quantity")}</label>
               <input type="number" min={1} required value={f.qty} onChange={(e) => setF({ ...f, qty: Number(e.target.value) })} />
             </div>
           </div>
           <ImageField
-            label="Book Cover (optional)"
+            label={t("fld_book_cover_opt")}
             title={f.title}
             folder="books"
             value={f.cover_url || ""}
             onChange={(url) => setF({ ...f, cover_url: url })}
             shape="rect"
           />
-          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>Save Book</button>
+          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>{t("btn_save_book")}</button>
         </form>
       </div>
     </div>
@@ -1229,16 +1234,17 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
 }
 
 function CategoryModal({ data, onClose, onSave }: { data: Category | null; onClose: () => void; onSave: (c: Category) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Category>({ id: data?.id ?? 0, name: data?.name ?? "", descr: data?.descr ?? "" });
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-tag" /> {data ? "Edit Category" : "Add Category"}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-tag" /> {data ? t("modal_edit_cat") : t("modal_add_cat")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(f); }}>
-          <div className="lp-input-group"><label>Name</label><input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
-          <div className="lp-input-group"><label>Description</label><textarea rows={3} value={f.descr} onChange={(e) => setF({ ...f, descr: e.target.value })} /></div>
-          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>Save Category</button>
+          <div className="lp-input-group"><label>{t("tbl_name")}</label><input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <div className="lp-input-group"><label>{t("tbl_description")}</label><textarea rows={3} value={f.descr} onChange={(e) => setF({ ...f, descr: e.target.value })} /></div>
+          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>{t("btn_save_category")}</button>
         </form>
       </div>
     </div>
@@ -1258,35 +1264,35 @@ function StudentModal({ data, students, onClose, onSave }: { data: Student | nul
   const Warn = ({ label, match }: { label: string; match: Student | null | undefined }) => match ? (
     <div style={{ marginTop: 6, padding: "8px 12px", borderRadius: 12, background: "rgba(255,90,90,0.08)", border: "1px solid rgba(255,90,90,0.25)", color: "#c0392b", fontSize: 12, display: "flex", alignItems: "center", gap: 8 }}>
       <i className="fa-solid fa-triangle-exclamation" />
-      <span>{label} already used by <strong>{match.name}</strong> (ID: {match.student_id}{match.email ? `, ${match.email}` : ""}{match.phone ? `, ${match.phone}` : ""})</span>
+      <span>{t("warn_used_by", { label })} <strong>{match.name}</strong> (ID: {match.student_id}{match.email ? `, ${match.email}` : ""}{match.phone ? `, ${match.phone}` : ""})</span>
     </div>
   ) : null;
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-user-graduate" /> {data ? "Edit Student" : "Add Student"}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-user-graduate" /> {data ? t("modal_edit_stu") : t("modal_add_stu")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); if (hasConflict) return; onSave(f); }}>
-          <div className="lp-input-group"><label>Full Name</label><input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <div className="lp-input-group"><label>{t("fld_full_name")}</label><input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
           <div className="lp-input-group">
-            <label>Student ID</label>
+            <label>{t("tbl_student_id")}</label>
             <input required value={f.student_id} onChange={(e) => setF({ ...f, student_id: e.target.value })} style={sidMatch ? { borderColor: "#e74c3c" } : undefined} />
-            <Warn label="Student ID" match={sidMatch} />
+            <Warn label={t("tbl_student_id")} match={sidMatch} />
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Email</label>
+              <label>{t("auth_lbl_email")}</label>
               <input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} style={emailMatch ? { borderColor: "#e74c3c" } : undefined} />
-              <Warn label="Email" match={emailMatch} />
+              <Warn label={t("auth_lbl_email")} match={emailMatch} />
             </div>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Phone</label>
+              <label>{t("tbl_phone")}</label>
               <input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} style={phoneMatch ? { borderColor: "#e74c3c" } : undefined} />
-              <Warn label="Phone" match={phoneMatch} />
+              <Warn label={t("tbl_phone")} match={phoneMatch} />
             </div>
           </div>
           <ImageField
-            label="Student Photo (optional)"
+            label={t("fld_student_photo_opt")}
             title={f.name}
             folder="students"
             value={f.image_url || ""}
@@ -1294,10 +1300,10 @@ function StudentModal({ data, students, onClose, onSave }: { data: Student | nul
             shape="circle"
           />
           <div className="lp-input-group">
-            <label>Address</label>
+            <label>{t("fld_address")}</label>
             <textarea rows={2} value={f.address || ""} onChange={(e) => setF({ ...f, address: e.target.value })} placeholder={t("ph_address_short")} style={{ width: "100%", padding: "10px 14px", borderRadius: 16, border: "1px solid var(--lp-border)", background: "#fff", fontSize: 13, fontFamily: "inherit", resize: "vertical" }} />
           </div>
-          <button type="submit" disabled={hasConflict} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12, opacity: hasConflict ? 0.5 : 1, cursor: hasConflict ? "not-allowed" : "pointer" }}>{hasConflict ? "Resolve conflicts to save" : "Save Student"}</button>
+          <button type="submit" disabled={hasConflict} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12, opacity: hasConflict ? 0.5 : 1, cursor: hasConflict ? "not-allowed" : "pointer" }}>{hasConflict ? t("btn_resolve_conflicts") : t("btn_save_student")}</button>
         </form>
       </div>
     </div>
@@ -1305,6 +1311,7 @@ function StudentModal({ data, students, onClose, onSave }: { data: Student | nul
 }
 
 function StudentViewModal({ student, issues, fines, bookMap, onClose }: { student: Student; issues: Issue[]; fines: Fine[]; bookMap: Record<number, Book>; onClose: () => void }) {
+  const { t } = useLang();
   const myIssues = useMemo(
     () => issues.filter((i) => i.student_id === student.id).slice().sort((a, b) => (b.issue_date || "").localeCompare(a.issue_date || "")),
     [issues, student.id],
@@ -1363,25 +1370,25 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
-          <Stat label="Issued" value={activeCount} tone="info" />
-          <Stat label="Overdue" value={overdueCount} tone={overdueCount > 0 ? "danger" : "warn"} />
-          <Stat label="Total Fines" value={`৳${totalFines.toFixed(2)}`} tone="money" />
-          <Stat label="Unpaid" value={`৳${unpaidFines.toFixed(2)}`} tone={unpaidFines > 0 ? "danger" : "money"} />
+          <Stat label={t("stu_stat_issued")} value={activeCount} tone="info" />
+          <Stat label={t("stu_stat_overdue")} value={overdueCount} tone={overdueCount > 0 ? "danger" : "warn"} />
+          <Stat label={t("stu_stat_total_fines")} value={`৳${totalFines.toFixed(2)}`} tone="money" />
+          <Stat label={t("stu_stat_unpaid")} value={`৳${unpaidFines.toFixed(2)}`} tone={unpaidFines > 0 ? "danger" : "money"} />
         </div>
 
         <div style={{ marginBottom: 8, fontSize: 13, fontWeight: 700, color: "#333" }}>
-          <i className="fa-solid fa-clock-rotate-left" style={{ marginRight: 6 }} /> Borrow History ({myIssues.length})
+          <i className="fa-solid fa-clock-rotate-left" style={{ marginRight: 6 }} /> {t("borrow_history")} ({myIssues.length})
         </div>
         <div className="lp-table-wrap" style={{ maxHeight: 340, overflowY: "auto" }}>
           <table>
             <thead>
               <tr>
-                <th>Book</th>
-                <th>Issued</th>
-                <th>Due</th>
-                <th>Returned</th>
-                <th>Status</th>
-                <th>Fine</th>
+                <th>{t("tbl_book")}</th>
+                <th>{t("tbl_issued")}</th>
+                <th>{t("tbl_due")}</th>
+                <th>{t("tbl_returned")}</th>
+                <th>{t("tbl_status")}</th>
+                <th>{t("tbl_fine")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1411,7 +1418,7 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
                 );
               })}
               {myIssues.length === 0 && (
-                <tr><td colSpan={6} style={{ textAlign: "center", padding: 24, color: "#8990a2" }}>No borrow history yet.</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 24, color: "#8990a2" }}>{t("empty_no_borrow")}</td></tr>
               )}
             </tbody>
           </table>
@@ -1422,6 +1429,7 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
 }
 
 function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { books: Book[]; students: Student[]; issues: Issue[]; maxIssues: number; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
+  const { t } = useLang();
   const [book_id, setB] = useState<number>(books[0]?.id ?? 0);
   const [student_id, setS] = useState<number>(students[0]?.id ?? 0);
   const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
@@ -1432,27 +1440,27 @@ function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { b
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-right-left" /> Issue Book</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-right-left" /> {t("modal_issue_book")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); if (book_id == null || student_id == null || Number.isNaN(book_id) || Number.isNaN(student_id)) return; if (atLimit) return; onSave({ book_id, student_id, due_date }); }}>
           <div className="lp-input-group">
-            <label>Book</label>
+            <label>{t("tbl_book")}</label>
             <select required value={book_id} onChange={(e) => setB(Number(e.target.value))}>
-              {books.length === 0 && <option value="">No books available</option>}
+              {books.length === 0 && <option value="">{t("opt_no_books")}</option>}
               {books.map((b) => <option key={b.id} value={b.id}>{b.title} — Available: {b.available}</option>)}
             </select>
           </div>
           <div className="lp-input-group">
-            <label>Student</label>
+            <label>{t("tbl_student")}</label>
             <select required value={student_id} onChange={(e) => setS(Number(e.target.value))}>
-              {students.length === 0 && <option value="">No students</option>}
+              {students.length === 0 && <option value="">{t("opt_no_students")}</option>}
               {students.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.student_id})</option>)}
             </select>
           </div>
-          <div className="lp-input-group"><label>Due Date</label><input type="date" required value={due_date} onChange={(e) => setD(e.target.value)} /></div>
+          <div className="lp-input-group"><label>{t("tbl_due_date")}</label><input type="date" required value={due_date} onChange={(e) => setD(e.target.value)} /></div>
           {atLimit && (
             <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c", padding: "10px 12px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>
               <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 6 }} />
-              This student already has {activeCount} active issue(s). Maximum allowed is {maxIssues}.
+              {t("err_max_issues", { count: activeCount, max: maxIssues })}
             </div>
           )}
           <button type="submit" disabled={atLimit} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12, opacity: atLimit ? 0.6 : 1, cursor: atLimit ? "not-allowed" : "pointer" }}>Issue Book</button>
@@ -1463,30 +1471,31 @@ function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { b
 }
 
 function IssueEditModal({ issue, bookMap, studentMap, onClose, onSave }: { issue: Issue; bookMap: Record<number, Book>; studentMap: Record<number, Student>; onClose: () => void; onSave: (v: Issue) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Issue>({ ...issue });
   const b = bookMap[f.book_id]; const s = studentMap[f.student_id];
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-pen" /> Edit Issue</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-pen" /> {t("modal_edit_issue")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(f); }}>
-          <div className="lp-input-group"><label>Book</label><input value={b?.title || "—"} readOnly /></div>
-          <div className="lp-input-group"><label>Student</label><input value={s ? `${s.name} (${s.student_id})` : "—"} readOnly /></div>
+          <div className="lp-input-group"><label>{t("tbl_book")}</label><input value={b?.title || "—"} readOnly /></div>
+          <div className="lp-input-group"><label>{t("tbl_student")}</label><input value={s ? `${s.name} (${s.student_id})` : "—"} readOnly /></div>
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Due Date</label>
+              <label>{t("tbl_due_date")}</label>
               <input type="date" required value={f.due_date} onChange={(e) => setF({ ...f, due_date: e.target.value })} />
             </div>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Status</label>
+              <label>{t("tbl_status")}</label>
               <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
-                <option value="Issued">Issued</option>
-                <option value="Returned">Returned</option>
+                <option value="Issued">{t("status_issued")}</option>
+                <option value="Returned">{t("status_returned")}</option>
               </select>
             </div>
           </div>
-          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>Save Changes</button>
+          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>{t("btn_save_changes")}</button>
         </form>
       </div>
     </div>
@@ -1511,12 +1520,12 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-money-bill" /> {data ? "Edit Fine" : "Add Fine"}</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-money-bill" /> {data ? t("modal_edit_fine") : t("modal_add_fine")}</h2>
         <form onSubmit={(e) => { e.preventDefault(); if (!f.issue_id || !f.student_id) { alert(t("err_select_issue")); return; } onSave(f); }}>
           <div className="lp-input-group">
-            <label>Issue</label>
+            <label>{t("fld_issue")}</label>
             <select required value={f.issue_id} onChange={(e) => setIssue(Number(e.target.value))}>
-              {issues.length === 0 && <option value="">No issues available</option>}
+              {issues.length === 0 && <option value="">{t("opt_no_issues")}</option>}
               {issues.map((i) => {
                 const b = bookMap[i.book_id]; const s = studentMap[i.student_id];
                 return <option key={i.id} value={i.id}>#{i.id} — {b?.title || "—"} → {s?.name || "—"}</option>;
@@ -1525,18 +1534,18 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Amount (৳)</label>
+              <label>{t("fld_amount_currency")}</label>
               <input type="number" min={0} step="0.01" required value={f.amount} onChange={(e) => setF({ ...f, amount: Number(e.target.value) })} />
             </div>
             <div className="lp-input-group" style={{ flex: 1 }}>
-              <label>Status</label>
+              <label>{t("tbl_status")}</label>
               <select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
-                <option value="Unpaid">Unpaid</option>
-                <option value="Paid">Paid</option>
+                <option value="Unpaid">{t("status_unpaid")}</option>
+                <option value="Paid">{t("status_paid")}</option>
               </select>
             </div>
           </div>
-          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>Save Fine</button>
+          <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>{t("btn_save_fine")}</button>
         </form>
       </div>
     </div>
@@ -1545,6 +1554,7 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
 
 /* Pagination */
 function Pagination({ page, pageSize, total, onChange }: { page: number; pageSize: number; total: number; onChange: (p: number) => void }) {
+  const { t } = useLang();
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (total <= pageSize) return null;
   const from = (page - 1) * pageSize + 1;
@@ -1559,11 +1569,11 @@ function Pagination({ page, pageSize, total, onChange }: { page: number; pageSiz
   const active: React.CSSProperties = { ...btn, background: "#181e15", color: "#fff", borderColor: "#181e15" };
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
-      <div style={{ fontSize: 12, color: "#6c6e79" }}>Showing {from}–{to} of {total}</div>
+      <div style={{ fontSize: 12, color: "#6c6e79" }}>{t("pag_showing", { from, to, total })}</div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        <button style={btn} disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Previous"><i className="fa-solid fa-chevron-left" /></button>
+        <button style={btn} disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label={t("ui_previous")}><i className="fa-solid fa-chevron-left" /></button>
         {nums.map((n, i) => n === "…" ? <span key={i} style={{ ...btn, border: "none", background: "transparent", cursor: "default" }}>…</span> : <button key={i} style={n === page ? active : btn} onClick={() => onChange(n)}>{n}</button>)}
-        <button style={btn} disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label="Next"><i className="fa-solid fa-chevron-right" /></button>
+        <button style={btn} disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label={t("ui_next")}><i className="fa-solid fa-chevron-right" /></button>
       </div>
     </div>
   );
@@ -1930,7 +1940,7 @@ function SettingsView({ fines }: { fines: Fine[] }) {
       window.dispatchEvent(new CustomEvent("lp-librarian-photo-change", { detail: prev }));
       setPhotoMsg({ kind: "err", text: error.message });
     } else {
-      setPhotoMsg({ kind: "ok", text: url ? "Profile photo updated." : "Profile photo removed." });
+      setPhotoMsg({ kind: "ok", text: url ? t("settings_photo_updated") : t("settings_photo_removed") });
     }
   };
 
@@ -1941,15 +1951,15 @@ function SettingsView({ fines }: { fines: Fine[] }) {
       if (name !== origName) updates.data = { display_name: name };
       if (email !== origEmail) updates.email = email;
       if (pw1 || pw2) {
-        if (pw1 !== pw2) throw new Error("Passwords do not match");
-        if (pw1.length < 6) throw new Error("Password must be at least 6 characters");
+        if (pw1 !== pw2) throw new Error(t("err_pw_mismatch"));
+        if (pw1.length < 6) throw new Error(t("err_pw_min"));
         updates.password = pw1;
       }
-      if (Object.keys(updates).length === 0) { setMsg({ kind: "ok", text: "Nothing to update." }); return; }
+      if (Object.keys(updates).length === 0) { setMsg({ kind: "ok", text: t("settings_nothing_update") }); return; }
       const { error } = await supabase.auth.updateUser(updates);
       if (error) throw error;
       setOrigName(name); setOrigEmail(email); setPw1(""); setPw2("");
-      setMsg({ kind: "ok", text: email !== origEmail ? "Saved. Check your inbox to confirm the new email." : "Account updated successfully." });
+      setMsg({ kind: "ok", text: email !== origEmail ? t("settings_email_confirm") : t("settings_account_ok") });
     } catch (err) {
       setMsg({ kind: "err", text: (err as Error).message });
     } finally { setSaving(false); }
@@ -1978,30 +1988,30 @@ function SettingsView({ fines }: { fines: Fine[] }) {
       logoUrl: sys.logoUrl.trim(),
       address: sys.address.trim().slice(0, 300),
     });
-    setInstMsg({ kind: "ok", text: "Institute settings saved successfully." });
+    setInstMsg({ kind: "ok", text: t("settings_inst_ok") });
   };
 
   const saveLibrary = (e: React.FormEvent) => {
     e.preventDefault();
     setLibMsg(null);
     const rate = Number(sys.fineRate);
-    if (!Number.isFinite(rate) || rate < 0) { setLibMsg({ kind: "err", text: "Fine rate must be a non-negative number." }); return; }
+    if (!Number.isFinite(rate) || rate < 0) { setLibMsg({ kind: "err", text: t("err_fine_rate") }); return; }
     const maxIssues = Math.floor(Number(sys.maxIssuesPerStudent));
-    if (!Number.isFinite(maxIssues) || maxIssues < 1) { setLibMsg({ kind: "err", text: "Maximum book issues must be at least 1." }); return; }
+    if (!Number.isFinite(maxIssues) || maxIssues < 1) { setLibMsg({ kind: "err", text: t("err_max_issues_min") }); return; }
     persistSettings({ fineRate: rate, maxIssuesPerStudent: maxIssues });
-    setLibMsg({ kind: "ok", text: "Library settings saved successfully." });
+    setLibMsg({ kind: "ok", text: t("settings_lib_ok") });
   };
 
   return (
     <div className="lp-view">
-      <ViewHeader title="Settings" icon="fa-gear" />
+      <ViewHeader title={t("settings")} icon="fa-gear" />
       <div className="lp-grid-2" style={{ alignItems: "start" }}>
         <div className="lp-card">
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Account Settings</h3>
-          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>Update your account name, email, and password.</p>
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{t("settings_account_title")}</h3>
+          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>{t("settings_account_desc")}</p>
           <form onSubmit={saveAccount}>
             <ImageField
-              label="Librarian Profile Photo"
+              label={t("fld_librarian_photo")}
               title={name || "librarian"}
               folder="logos"
               value={photoUrl}
@@ -2009,35 +2019,35 @@ function SettingsView({ fines }: { fines: Fine[] }) {
               shape="circle"
             />
             {photoMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: photoMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: photoMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{photoMsg.text}</div>}
-            <div className="lp-input-group"><label>Librarian Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("ph_your_name")} /></div>
-            <div className="lp-input-group"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+            <div className="lp-input-group"><label>{t("fld_librarian_name")}</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("ph_your_name")} /></div>
+            <div className="lp-input-group"><label>{t("auth_lbl_email")}</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
             <div style={{ display: "flex", gap: 12 }}>
-              <div className="lp-input-group" style={{ flex: 1 }}><label>New Password</label><input type="password" value={pw1} onChange={(e) => setPw1(e.target.value)} placeholder={t("ph_new_pw_keep")} autoComplete="new-password" /></div>
-              <div className="lp-input-group" style={{ flex: 1 }}><label>Confirm Password</label><input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder={t("ph_repeat_pw")} autoComplete="new-password" /></div>
+              <div className="lp-input-group" style={{ flex: 1 }}><label>{t("fld_new_password")}</label><input type="password" value={pw1} onChange={(e) => setPw1(e.target.value)} placeholder={t("ph_new_pw_keep")} autoComplete="new-password" /></div>
+              <div className="lp-input-group" style={{ flex: 1 }}><label>{t("fld_confirm_password")}</label><input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder={t("ph_repeat_pw")} autoComplete="new-password" /></div>
             </div>
             {msg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: msg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: msg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{msg.text}</div>}
             <button type="submit" disabled={saving} className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
-              <i className="fa-solid fa-floppy-disk" /> {saving ? "Saving…" : "Save Changes"}
+              <i className="fa-solid fa-floppy-disk" /> {saving ? t("saving") : t("btn_save_changes")}
             </button>
           </form>
         </div>
 
         <div className="lp-card">
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Institute Settings</h3>
-          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>Institute identity used across the app and exports.</p>
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{t("settings_institute_title")}</h3>
+          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>{t("settings_institute_desc")}</p>
           <form onSubmit={saveInstitute}>
             <div className="lp-input-group">
-              <label>Institute Name</label>
+              <label>{t("fld_institute_name")}</label>
               <input value={sys.instituteName} maxLength={120}
                 onChange={(e) => setSys({ ...sys, instituteName: e.target.value })} placeholder={t("ph_institute_eg")} />
             </div>
             <div className="lp-input-group">
-              <label>Library Name</label>
+              <label>{t("fld_library_name")}</label>
               <input value={sys.libraryName} maxLength={120}
                 onChange={(e) => setSys({ ...sys, libraryName: e.target.value })} placeholder={t("ph_library_eg")} />
             </div>
             <ImageField
-              label="Library Logo"
+              label={t("fld_library_logo")}
               title={sys.libraryName || sys.instituteName || "logo"}
               folder="logos"
               value={sys.logoUrl}
@@ -2045,48 +2055,48 @@ function SettingsView({ fines }: { fines: Fine[] }) {
               shape="rect"
             />
             <div className="lp-input-group">
-              <label>Address</label>
+              <label>{t("fld_address")}</label>
               <input value={sys.address} maxLength={300}
                 onChange={(e) => setSys({ ...sys, address: e.target.value })} placeholder={t("ph_address_full")} />
             </div>
             {instMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: instMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: instMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{instMsg.text}</div>}
             <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
-              <i className="fa-solid fa-floppy-disk" /> Save Institute Settings
+              <i className="fa-solid fa-floppy-disk" /> {t("btn_save_institute")}
             </button>
           </form>
         </div>
 
         <div className="lp-card">
-          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Library Settings</h3>
-          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>Circulation rules applied to fines and book issues.</p>
+          <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{t("settings_library_title")}</h3>
+          <p style={{ fontSize: 12, color: "#6c6e79", marginBottom: 16 }}>{t("settings_library_desc")}</p>
           <form onSubmit={saveLibrary}>
             <div className="lp-input-group">
-              <label>Fine Rate (৳ per day)</label>
+              <label>{t("fld_fine_rate")}</label>
               <input type="number" min={0} step="0.5" value={sys.fineRate}
                 onChange={(e) => setSys({ ...sys, fineRate: Number(e.target.value) })} />
             </div>
             <div className="lp-input-group">
-              <label>Maximum Book Issues Per Student</label>
+              <label>{t("fld_max_issues")}</label>
               <input type="number" min={1} step="1" value={sys.maxIssuesPerStudent}
                 onChange={(e) => setSys({ ...sys, maxIssuesPerStudent: Number(e.target.value) })} />
             </div>
             {libMsg && <div style={{ padding: "10px 14px", borderRadius: 12, marginBottom: 12, fontSize: 13, background: libMsg.kind === "ok" ? "rgba(24,240,191,0.15)" : "rgba(220,53,69,0.12)", color: libMsg.kind === "ok" ? "#0f9877" : "#b3282b" }}>{libMsg.text}</div>}
             <button type="submit" className="lp-btn lp-btn-primary" style={{ width: "100%", justifyContent: "center", padding: 12 }}>
-              <i className="fa-solid fa-floppy-disk" /> Save Library Settings
+              <i className="fa-solid fa-floppy-disk" /> {t("btn_save_library")}
             </button>
           </form>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
             <div style={{ padding: 14, borderRadius: 16, background: "linear-gradient(135deg,#e2fbdb 0%,#f2fff0 100%)", border: "1px solid rgba(137,255,117,0.38)" }}>
-              <div style={{ fontSize: 11, color: "#6c6e79", fontWeight: 600, textTransform: "uppercase" }}>Fines Collected</div>
+              <div style={{ fontSize: 11, color: "#6c6e79", fontWeight: 600, textTransform: "uppercase" }}>{t("settings_fines_collected")}</div>
               <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>৳{totalPaid}</div>
             </div>
             <div style={{ padding: 14, borderRadius: 16, background: "linear-gradient(135deg,#ffe4ef 0%,#fff1f6 100%)", border: "1px solid rgba(255,120,170,0.3)" }}>
-              <div style={{ fontSize: 11, color: "#6c6e79", fontWeight: 600, textTransform: "uppercase" }}>Outstanding</div>
+              <div style={{ fontSize: 11, color: "#6c6e79", fontWeight: 600, textTransform: "uppercase" }}>{t("settings_outstanding")}</div>
               <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4 }}>৳{totalUnpaid}</div>
             </div>
           </div>
           <div style={{ fontSize: 12, color: "#6c6e79", marginTop: 14, lineHeight: 1.5 }}>
-            Formula: <strong style={{ color: "#181e15" }}>fine = days_late × ৳{sys.fineRate}</strong>. Overdue is calculated from <em>today − due_date</em> for any issue still in the "Issued" state.
+            {t("settings_formula", { formula: `fine = days_late × ৳${sys.fineRate}` })}
           </div>
         </div>
       </div>
