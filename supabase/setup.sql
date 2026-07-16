@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 CREATE TABLE IF NOT EXISTS public.books (
   id         SERIAL PRIMARY KEY,
   title      TEXT NOT NULL,
+  author     TEXT NOT NULL DEFAULT '',
   isbn       TEXT DEFAULT '',
   cat_id     INT REFERENCES public.categories(id),
   pub_year   INT DEFAULT 2024,
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS public.books (
   cover_url  TEXT DEFAULT ''
 );
 ALTER TABLE public.books      ADD COLUMN IF NOT EXISTS cover_url TEXT DEFAULT '';
+ALTER TABLE public.books      ADD COLUMN IF NOT EXISTS author    TEXT NOT NULL DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS public.students (
   id          SERIAL PRIMARY KEY,
