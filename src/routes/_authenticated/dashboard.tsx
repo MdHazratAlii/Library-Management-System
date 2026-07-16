@@ -281,8 +281,9 @@ export function Dashboard() {
 
   const saveStudent = async (form: Student & { id?: number }) => {
     const image_url = form.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name)}&background=ff6b00&color=fff`;
-    if (form.id) await supabase.from("students").update({ ...form, image_url }).eq("id", form.id);
-    else await supabase.from("students").insert({ ...form, image_url });
+    const { id, ...rest } = form;
+    if (id) await supabase.from("students").update({ ...rest, image_url }).eq("id", id);
+    else await supabase.from("students").insert({ ...rest, image_url });
     close(); loadAll();
   };
 
