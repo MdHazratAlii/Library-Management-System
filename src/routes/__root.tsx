@@ -16,6 +16,7 @@ import { registerAppSW } from "../lib/register-sw";
 import { OfflineIndicator } from "../components/OfflineIndicator";
 import { InstallPrompt } from "../components/InstallPrompt";
 import { DevInfoPopup } from "../components/DevInfoPopup";
+import { LanguageProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -149,11 +150,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <OfflineIndicator />
-      <InstallPrompt />
-      <DevInfoPopup />
+      <LanguageProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <OfflineIndicator />
+        <InstallPrompt />
+        <DevInfoPopup />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

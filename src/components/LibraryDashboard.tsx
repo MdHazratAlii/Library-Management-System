@@ -10,6 +10,8 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
 import { uploadTitledImage } from "@/lib/image-upload";
+import { useLang, localeFor } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 type Category = { id: number; name: string; descr: string };
 type Book = { id: number; title: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
@@ -60,6 +62,7 @@ function daysBetween(dueISO: string) {
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { t, lang } = useLang();
   const validViews: ViewKey[] = ["dashboard", "books", "categories", "students", "issues", "overdue", "fines", "reports", "settings"];
   const [view, setViewState] = useState<ViewKey>(() => {
     if (typeof window === "undefined") return "dashboard";
@@ -380,7 +383,7 @@ export function Dashboard() {
     loadAll();
   };
 
-  const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const dateStr = new Date().toLocaleDateString(localeFor(lang), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const NavItem = ({ id, icon, label }: { id: ViewKey; icon: string; label: string }) => (
     <div
@@ -485,21 +488,21 @@ export function Dashboard() {
           )}
         </div>
 
-        <NavItem id="dashboard" icon="fa-gauge-high" label="Dashboard" />
+        <NavItem id="dashboard" icon="fa-gauge-high" label={t("dashboard")} />
 
-        <SectionLabel>Library</SectionLabel>
-        <NavItem id="books" icon="fa-book" label="Books" />
-        <NavItem id="categories" icon="fa-tags" label="Categories" />
+        <SectionLabel>{t("section_library")}</SectionLabel>
+        <NavItem id="books" icon="fa-book" label={t("books")} />
+        <NavItem id="categories" icon="fa-tags" label={t("categories")} />
 
-        <SectionLabel>Circulation</SectionLabel>
-        <NavItem id="issues" icon="fa-right-left" label="Book Issues" />
-        <NavItem id="overdue" icon="fa-triangle-exclamation" label="Overdue" />
-        <NavItem id="fines" icon="fa-money-bill" label="Fines" />
+        <SectionLabel>{t("section_circulation")}</SectionLabel>
+        <NavItem id="issues" icon="fa-right-left" label={t("issues")} />
+        <NavItem id="overdue" icon="fa-triangle-exclamation" label={t("overdue")} />
+        <NavItem id="fines" icon="fa-money-bill" label={t("fines")} />
 
-        <SectionLabel>Users & Reports</SectionLabel>
-        <NavItem id="students" icon="fa-user-graduate" label="Students" />
-        <NavItem id="reports" icon="fa-chart-line" label="Reports" />
-        <NavItem id="settings" icon="fa-gear" label="Settings" />
+        <SectionLabel>{t("section_users_reports")}</SectionLabel>
+        <NavItem id="students" icon="fa-user-graduate" label={t("students")} />
+        <NavItem id="reports" icon="fa-chart-line" label={t("reports")} />
+        <NavItem id="settings" icon="fa-gear" label={t("settings")} />
       </aside>
 
       {/* Main */}
@@ -532,11 +535,12 @@ export function Dashboard() {
             )}
             {!isMobile && <div style={{ lineHeight: 1.2 }}>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{username}</div>
-              <div style={{ fontSize: 11, color: "#6c6e79" }}>Librarian</div>
+              <div style={{ fontSize: 11, color: "#6c6e79" }}>{t("librarian")}</div>
             </div>}
             {!isMobile && <div style={{ width: 1, height: 32, background: "#dceeeb", margin: "0 4px" }} />}
+            <LanguageSelector compact={isMobile} />
             <button className="lp-btn lp-btn-outline-danger" onClick={logout}>
-              <i className="fa-solid fa-right-from-bracket" /> {!isMobile && "Logout"}
+              <i className="fa-solid fa-right-from-bracket" /> {!isMobile && t("logout")}
             </button>
           </div>
         </header>
