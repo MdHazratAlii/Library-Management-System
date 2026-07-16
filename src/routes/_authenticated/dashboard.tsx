@@ -562,7 +562,7 @@ export function Dashboard() {
                 ) : (
                   <>
                     <StatCard tone="info" icon="fa-book" num={stat_b} lbl="Total Books" />
-                    <StatCard tone="active" icon="fa-right-left" num={issues.length} lbl="Total Issues" />
+                    <StatCard tone="active" icon="fa-right-left" num={issues.filter((i) => i.status === "Issued" || i.status === "Overdue" || isOverdue(i)).length} lbl="Issued Books" />
                     <StatCard tone="warning" icon="fa-triangle-exclamation" num={stat_o} lbl="Overdue" />
                     <StatCard tone="money" icon="fa-money-bill" num={`৳${stat_f}`} lbl="Fines" />
                   </>
