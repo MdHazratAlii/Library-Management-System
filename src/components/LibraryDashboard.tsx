@@ -1536,6 +1536,14 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
     amount: data?.amount ?? 0,
     status: data?.status ?? "Unpaid",
   });
+  const [qIssue, setQIssue] = useState("");
+  const norm = (v: unknown) => String(v ?? "").toLowerCase();
+  const filteredIssues = issues.filter((i) => {
+    const q = qIssue.trim().toLowerCase();
+    if (!q) return true;
+    const b = bookMap[i.book_id]; const s = studentMap[i.student_id];
+    return [i.id, b?.title, b?.author, b?.isbn, s?.name, s?.email, s?.student_id, s?.phone, i.status].some((v) => norm(v).includes(q));
+  });
   const setIssue = (issue_id: number) => {
     const iss = issues.find((i) => i.id === issue_id);
     setF((prev) => ({ ...prev, issue_id, student_id: iss?.student_id ?? prev.student_id }));
@@ -1548,9 +1556,10 @@ function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { dat
         <form onSubmit={(e) => { e.preventDefault(); if (!f.issue_id || !f.student_id) { alert(t("err_select_issue")); return; } onSave(f); }}>
           <div className="lp-input-group">
             <label>{t("fld_issue")}</label>
+            <input type="text" value={qIssue} onChange={(e) => setQIssue(e.target.value)} placeholder={t("ph_filter_issues")} style={{ marginBottom: 6 }} />
             <select required value={f.issue_id} onChange={(e) => setIssue(Number(e.target.value))}>
-              {issues.length === 0 && <option value="">{t("opt_no_issues")}</option>}
-              {issues.map((i) => {
+              {filteredIssues.length === 0 && <option value="">{t("opt_no_issues")}</option>}
+              {filteredIssues.map((i) => {
                 const b = bookMap[i.book_id]; const s = studentMap[i.student_id];
                 return <option key={i.id} value={i.id}>#{i.id} — {b?.title || "—"} → {s?.name || "—"}</option>;
               })}
