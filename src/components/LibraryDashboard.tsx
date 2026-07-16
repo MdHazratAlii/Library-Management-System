@@ -966,6 +966,19 @@ export function Dashboard() {
       {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} issues={issues} catMap={catMap} maxIssues={getSettings().maxIssuesPerStudent} onClose={close} onSave={saveIssue} />}
       {modal === "issue-edit" && <IssueEditModal issue={editData as unknown as Issue} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveIssueEdit} />}
       {modal === "fine" && <FineModal data={editData as Fine | null} issues={issues} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveFine} />}
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          danger={confirmState.danger}
+          onCancel={() => setConfirmState(null)}
+          onConfirm={async () => {
+            const fn = confirmState.onConfirm;
+            setConfirmState(null);
+            await fn();
+          }}
+        />
+      )}
     </div>
   );
 }
