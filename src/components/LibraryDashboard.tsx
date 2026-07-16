@@ -970,7 +970,6 @@ const STAT_TONES: Record<StatTone, { bg: string; icoBg: string; icoColor: string
   money:   { bg: "linear-gradient(135deg,#ffe4ef 0%,#fff1f6 100%)", icoBg: "rgba(255,120,170,0.22)", icoColor: "#b6316b", border: "rgba(255,120,170,0.30)" },
 };
 function StatCard({ tone, icon, num, lbl }: { tone: StatTone; icon: string; num: number | string; lbl: string }) {
-  const { t } = useLang();
   const t = STAT_TONES[tone];
   return (
     <div className="lp-card-stat" style={{ background: t.bg, borderColor: t.border }}>
@@ -1028,7 +1027,6 @@ function EmptyState({ icon, title, sub }: { icon: string; title: string; sub?: s
 }
 
 function ViewHeader({ title, icon, btn }: { title: string; icon: string; btn?: React.ReactNode }) {
-  const { t } = useLang();
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
       <h1 style={{ fontSize: 30, fontWeight: 600, display: "flex", alignItems: "center", gap: 12, letterSpacing: "-0.03em" }}>
@@ -1040,7 +1038,6 @@ function ViewHeader({ title, icon, btn }: { title: string; icon: string; btn?: R
 }
 
 function ReportRow({ label, value, valueColor, last }: { label: string; value: React.ReactNode; valueColor?: string; last?: boolean }) {
-  const { t } = useLang();
   return (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 0", borderBottom: last ? "none" : "1px solid #dceeeb", fontSize: 14 }}>
       <span>{label}</span>
