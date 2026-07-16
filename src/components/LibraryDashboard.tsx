@@ -639,7 +639,7 @@ export function Dashboard() {
               </FilterBar>
               <div className="lp-table-wrap">
                 <table>
-                  <thead><tr><th style={{ width: 64 }}>{t("tbl_cover")}</th><th>{t("tbl_title")}</th><th>{t("tbl_category")}</th><th>{t("tbl_isbn")}</th><th>{t("tbl_qty")}</th><th>{t("tbl_available")}</th><th>{t("ui_actions")}</th></tr></thead>
+                  <thead><tr><th style={{ width: 64 }}>{t("tbl_cover")}</th><th>{t("tbl_title")}</th><th>{t("fld_author")}</th><th>{t("tbl_category")}</th><th>{t("tbl_isbn")}</th><th>{t("tbl_qty")}</th><th>{t("tbl_available")}</th><th>{t("ui_actions")}</th></tr></thead>
                   <tbody>
                      {pagedBooks.map((b) => (
                       <tr key={b.id}>
@@ -651,6 +651,7 @@ export function Dashboard() {
                            )}
                          </td>
                         <td><div style={{ fontWeight: 600 }}>{b.title}</div><div style={{ fontSize: 11, color: "#8990a2" }}>{b.pub_year}</div></td>
+                        <td>{b.author || "—"}</td>
                         <td><span className="lp-badge lp-badge-blue">{catMap[b.cat_id || 0] || "—"}</span></td>
                         <td>{b.isbn || "—"}</td>
                         <td>{b.qty}</td>
@@ -661,7 +662,7 @@ export function Dashboard() {
                         </td>
                       </tr>
                     ))}
-                     {filteredBooks.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{books.length === 0 ? t("empty_no_books") : t("empty_no_books_match")}</td></tr>}
+                    {filteredBooks.length === 0 && <tr><td colSpan={8} style={{ textAlign: "center", padding: 30, color: "#8990a2" }}>{books.length === 0 ? t("empty_no_books") : t("empty_no_books_match")}</td></tr>}
                   </tbody>
                 </table>
               </div>
