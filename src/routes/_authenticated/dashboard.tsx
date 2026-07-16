@@ -778,6 +778,12 @@ export function Dashboard() {
                     [["Total Issues", filteredIssues.length], ["Issued", filteredIssues.filter((i) => i.status === "Issued").length], ["Returned", filteredIssues.filter((i) => i.status === "Returned").length], ["Overdue", filteredIssues.filter((i) => i.status === "Overdue" || isOverdue(i)).length]])}><i className="fa-solid fa-file-excel" /> Export XLSX</button>
                   <button className="lp-btn lp-btn-purple" onClick={openIssue}><i className="fa-solid fa-plus" /> Issue Book</button>
                 </div>} />
+              <div className="lp-grid-stats">
+                <StatCard tone="active" icon="fa-right-left" num={issues.length} lbl="Total Issued" />
+                <StatCard tone="info" icon="fa-rotate-left" num={issues.filter((i) => i.status === "Returned").length} lbl="Total Returned" />
+                <StatCard tone="warning" icon="fa-triangle-exclamation" num={issues.filter((i) => i.status === "Overdue" || isOverdue(i)).length} lbl="Overdue" />
+                <StatCard tone="money" icon="fa-book" num={books.reduce((a, b) => a + (b.available || 0), 0)} lbl="Available Books" />
+              </div>
               <FilterBar>
                 <SearchInput value={qIssues} onChange={setQIssues} placeholder="Filter by book, student, date…" />
                 <select value={issueStatus} onChange={(e) => setIssueStatus(e.target.value as typeof issueStatus)} style={{ height: 40, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", padding: "0 14px", fontSize: 13, color: "#181e15", cursor: "pointer", minWidth: 160 }}>
