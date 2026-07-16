@@ -1493,6 +1493,7 @@ function IssueEditModal({ issue, bookMap, studentMap, onClose, onSave }: { issue
 }
 
 function FineModal({ data, issues, bookMap, studentMap, onClose, onSave }: { data: Fine | null; issues: Issue[]; bookMap: Record<number, Book>; studentMap: Record<number, Student>; onClose: () => void; onSave: (v: Fine) => void }) {
+  const { t } = useLang();
   const first = issues[0];
   const [f, setF] = useState<Fine>({
     id: data?.id ?? 0,
