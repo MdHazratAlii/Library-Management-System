@@ -14,7 +14,7 @@ import { useLang, localeFor } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
 type Category = { id: number; name: string; descr: string };
-type Book = { id: number; title: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
+type Book = { id: number; title: string; author: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
 type Student = { id: number; name: string; student_id: string; email: string; phone: string; image_url: string; address?: string };
 type Issue = { id: number; book_id: number; student_id: number; issue_date: string; due_date: string; status: string; return_date?: string | null };
 type Fine = { id: number; issue_id: number; student_id: number; amount: number; status: string };
@@ -259,12 +259,12 @@ export function Dashboard() {
       const old = bookMap[form.id];
       const newAvail = Math.max(0, (old?.available || 0) + (form.qty - (old?.qty || 0)));
       await supabase.from("books").update({
-        title: form.title, isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: newAvail,
+        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: newAvail,
         cover_url: form.cover_url ?? "",
       } as never).eq("id", form.id);
     } else {
       await supabase.from("books").insert({
-        title: form.title, isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: form.qty,
+        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: form.qty,
         cover_url: form.cover_url ?? "",
       } as never);
     }
@@ -1184,7 +1184,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
 
 function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Book | null; onClose: () => void; onSave: (b: Book) => void }) {
   const { t } = useLang();
-  const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
+  const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", author: data?.author ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
@@ -1199,6 +1199,12 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
             <div className="lp-input-group" style={{ flex: 2 }}>
               <label>{t("tbl_title")}</label>
               <input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <div className="lp-input-group" style={{ flex: 1 }}>
+              <label>{t("fld_author")}</label>
+              <input value={f.author} onChange={(e) => setF({ ...f, author: e.target.value })} />
             </div>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
