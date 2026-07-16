@@ -1271,7 +1271,7 @@ function ConfirmModal({ message, confirmLabel, danger, onCancel, onConfirm }: { 
           {message}
         </h2>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
-          <button type="button" className="lp-btn" onClick={onCancel}>{t("btn_cancel") || "Cancel"}</button>
+          <button type="button" className="lp-btn" onClick={onCancel}>{t("ui_cancel")}</button>
           <button type="button" className={`lp-btn ${danger ? "lp-btn-danger" : "lp-btn-primary"}`} onClick={() => { void onConfirm(); }}>{confirmLabel || "OK"}</button>
         </div>
       </div>
