@@ -1246,6 +1246,7 @@ function CategoryModal({ data, onClose, onSave }: { data: Category | null; onClo
 }
 
 function StudentModal({ data, students, onClose, onSave }: { data: Student | null; students: Student[]; onClose: () => void; onSave: (s: Student) => void }) {
+  const { t } = useLang();
   const [f, setF] = useState<Student>({ id: data?.id ?? 0, name: data?.name ?? "", student_id: data?.student_id ?? "", email: data?.email ?? "", phone: data?.phone ?? "", image_url: data?.image_url ?? "", address: data?.address ?? "" });
   const norm = (v: string) => (v || "").trim().toLowerCase();
   const others = students.filter((s) => s.id !== (data?.id ?? 0));
@@ -1895,6 +1896,7 @@ function exportAllReportsXLSX(ctx: AllReportsCtx) {
 
 /* Settings View */
 function SettingsView({ fines }: { fines: Fine[] }) {
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [origEmail, setOrigEmail] = useState("");
