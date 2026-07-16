@@ -177,8 +177,8 @@ export function Dashboard() {
 
   const filteredBooks = useMemo(() => books.filter((b) =>
     (catFilter === "all" || b.cat_id === catFilter) &&
-    matches(globalQ, b.title, b.isbn, catMap[b.cat_id || 0]) &&
-    matches(qBooks, b.title, b.isbn, catMap[b.cat_id || 0], b.pub_year)
+    matches(globalQ, b.title, b.author, b.isbn, catMap[b.cat_id || 0]) &&
+    matches(qBooks, b.title, b.author, b.isbn, catMap[b.cat_id || 0], b.pub_year)
   ), [books, catFilter, globalQ, qBooks, catMap]);
 
   const filteredCats = useMemo(() => cats.filter((c) =>
