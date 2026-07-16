@@ -1205,8 +1205,6 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
 }
 
 function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Book | null; onClose: () => void; onSave: (b: Book) => void }) {
-  // placeholder to satisfy anchor
-
   const { t } = useLang();
   const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", author: data?.author ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
   return (
