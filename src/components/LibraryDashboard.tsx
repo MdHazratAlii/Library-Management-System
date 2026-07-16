@@ -955,7 +955,7 @@ export function Dashboard() {
       {modal === "category" && <CategoryModal data={editData as Category | null} onClose={close} onSave={saveCat} />}
       {modal === "student" && <StudentModal data={editData as Student | null} students={students} onClose={close} onSave={saveStudent} />}
       {modal === "student-view" && <StudentViewModal student={editData as unknown as Student} issues={issues} fines={fines} bookMap={bookMap} onClose={close} />}
-      {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} issues={issues} maxIssues={getSettings().maxIssuesPerStudent} onClose={close} onSave={saveIssue} />}
+      {modal === "issue" && <IssueModal books={books.filter((b) => b.available > 0)} students={students} issues={issues} catMap={catMap} maxIssues={getSettings().maxIssuesPerStudent} onClose={close} onSave={saveIssue} />}
       {modal === "issue-edit" && <IssueEditModal issue={editData as unknown as Issue} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveIssueEdit} />}
       {modal === "fine" && <FineModal data={editData as Fine | null} issues={issues} bookMap={bookMap} studentMap={studentMap} onClose={close} onSave={saveFine} />}
     </div>
@@ -1435,10 +1435,25 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
   );
 }
 
-function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { books: Book[]; students: Student[]; issues: Issue[]; maxIssues: number; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
+function IssueModal({ books, students, issues, catMap, maxIssues, onClose, onSave }: { books: Book[]; students: Student[]; issues: Issue[]; catMap: Record<number, string>; maxIssues: number; onClose: () => void; onSave: (v: { book_id: number; student_id: number; due_date: string }) => void }) {
   const { t } = useLang();
   const [book_id, setB] = useState<number>(books[0]?.id ?? 0);
   const [student_id, setS] = useState<number>(students[0]?.id ?? 0);
+  const [qBook, setQBook] = useState("");
+  const [qStudent, setQStudent] = useState("");
+  const norm = (v: unknown) => String(v ?? "").toLowerCase();
+  const bookMatches = (b: Book) => {
+    const q = qBook.trim().toLowerCase();
+    if (!q) return true;
+    return [b.title, b.author, b.isbn, catMap[b.cat_id || 0]].some((f) => norm(f).includes(q));
+  };
+  const studentMatches = (s: Student) => {
+    const q = qStudent.trim().toLowerCase();
+    if (!q) return true;
+    return [s.name, s.email, s.student_id, s.phone].some((f) => norm(f).includes(q));
+  };
+  const filteredBooks = books.filter(bookMatches);
+  const filteredStudents = students.filter(studentMatches);
   const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   const [due_date, setD] = useState<string>(in7);
   const activeCount = issues.filter((i) => i.student_id === student_id && i.status === "Issued").length;
@@ -1451,16 +1466,18 @@ function IssueModal({ books, students, issues, maxIssues, onClose, onSave }: { b
         <form onSubmit={(e) => { e.preventDefault(); if (book_id == null || student_id == null || Number.isNaN(book_id) || Number.isNaN(student_id)) return; if (atLimit) return; onSave({ book_id, student_id, due_date }); }}>
           <div className="lp-input-group">
             <label>{t("tbl_book")}</label>
+            <input type="text" value={qBook} onChange={(e) => setQBook(e.target.value)} placeholder={t("ph_filter_books")} style={{ marginBottom: 6 }} />
             <select required value={book_id} onChange={(e) => setB(Number(e.target.value))}>
-              {books.length === 0 && <option value="">{t("opt_no_books")}</option>}
-              {books.map((b) => <option key={b.id} value={b.id}>{b.title} — Available: {b.available}</option>)}
+              {filteredBooks.length === 0 && <option value="">{t("opt_no_books")}</option>}
+              {filteredBooks.map((b) => <option key={b.id} value={b.id}>{b.title} — {b.author || "—"} — Available: {b.available}</option>)}
             </select>
           </div>
           <div className="lp-input-group">
             <label>{t("tbl_student")}</label>
+            <input type="text" value={qStudent} onChange={(e) => setQStudent(e.target.value)} placeholder={t("ph_filter_students")} style={{ marginBottom: 6 }} />
             <select required value={student_id} onChange={(e) => setS(Number(e.target.value))}>
-              {students.length === 0 && <option value="">{t("opt_no_students")}</option>}
-              {students.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.student_id})</option>)}
+              {filteredStudents.length === 0 && <option value="">{t("opt_no_students")}</option>}
+              {filteredStudents.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.student_id})</option>)}
             </select>
           </div>
           <div className="lp-input-group"><label>{t("tbl_due_date")}</label><input type="date" required value={due_date} onChange={(e) => setD(e.target.value)} /></div>
