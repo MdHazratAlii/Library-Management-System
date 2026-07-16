@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,11 +10,6 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
 import { uploadTitledImage } from "@/lib/image-upload";
-
-export const Route = createFileRoute("/_authenticated/dashboard")({
-  beforeLoad: () => { throw redirect({ to: "/" }); },
-  component: () => null,
-});
 
 type Category = { id: number; name: string; descr: string };
 type Book = { id: number; title: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
