@@ -245,6 +245,9 @@ export function Dashboard() {
   const [modal, setModal] = useState<null | "book" | "category" | "student" | "student-view" | "issue" | "issue-edit" | "fine">(null);
   const [editData, setEditData] = useState<Record<string, unknown> | null>(null);
 
+  // Confirmation dialog state
+  const [confirmState, setConfirmState] = useState<null | { message: string; onConfirm: () => void | Promise<void>; confirmLabel?: string; danger?: boolean }>(null);
+
   const openBook = (d: Book | null = null) => { setEditData(d as never); setModal("book"); };
   const openCat = (d: Category | null = null) => { setEditData(d as never); setModal("category"); };
   const openStudent = (d: Student | null = null) => { setEditData(d as never); setModal("student"); };
@@ -336,9 +339,14 @@ export function Dashboard() {
   };
 
   const payFine = async (id: number) => {
-    if (!confirm(t("confirm_mark_paid"))) return;
-    await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
-    loadAll();
+    setConfirmState({
+      message: t("confirm_mark_paid"),
+      confirmLabel: t("btn_mark_paid"),
+      onConfirm: async () => {
+        await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
+        loadAll();
+      },
+    });
   };
 
   const saveIssueEdit = async (form: Issue) => {
