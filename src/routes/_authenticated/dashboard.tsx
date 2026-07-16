@@ -1419,7 +1419,7 @@ function IssueModal({ books, students, onClose, onSave }: { books: Book[]; stude
       <div className="lp-modal" style={{ maxWidth: 500 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}><i className="fa-solid fa-right-left" /> Issue Book</h2>
-        <form onSubmit={(e) => { e.preventDefault(); if (!book_id || !student_id) return; onSave({ book_id, student_id, due_date }); }}>
+        <form onSubmit={(e) => { e.preventDefault(); if (book_id == null || student_id == null || Number.isNaN(book_id) || Number.isNaN(student_id)) return; onSave({ book_id, student_id, due_date }); }}>
           <div className="lp-input-group">
             <label>Book</label>
             <select required value={book_id} onChange={(e) => setB(Number(e.target.value))}>
