@@ -56,7 +56,7 @@ async function pullTable(table: SyncTable): Promise<void> {
     }
   });
   // Advance watermark to newest server updated_at seen.
-  const newest = (data as Array<Record<string, string>>).reduce((max, r) => {
+  const newest = (data as unknown as Array<{ updated_at?: string }>).reduce((max, r) => {
     const t = r.updated_at ?? "";
     return t > max ? t : max;
   }, watermark);
