@@ -1207,6 +1207,28 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
 function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Book | null; onClose: () => void; onSave: (b: Book) => void }) {
   const { t } = useLang();
   const [f, setF] = useState<Book>({ id: data?.id ?? 0, title: data?.title ?? "", author: data?.author ?? "", isbn: data?.isbn ?? "", cat_id: data?.cat_id ?? (cats[0]?.id ?? null), pub_year: data?.pub_year ?? 2024, qty: data?.qty ?? 1, available: data?.available ?? 1, cover_url: data?.cover_url ?? "" });
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const runIsbnLookup = async () => {
+    setLookupError(null);
+    const { isValidIsbn, lookupIsbn } = await import("@/lib/isbn-lookup");
+    if (!isValidIsbn(f.isbn)) { setLookupError("Please enter a valid ISBN (10 or 13 digits)."); return; }
+    setLookupLoading(true);
+    try {
+      const info = await lookupIsbn(f.isbn);
+      const next = { ...f };
+      const ask = (label: string) => window.confirm(`${label} already has a value. Replace it?`);
+      if (info.title && (!next.title || ask("Title"))) next.title = info.title;
+      if (info.author && (!next.author || ask("Author"))) next.author = info.author;
+      if (info.pub_year && (!next.pub_year || next.pub_year === 2024 || ask("Publication year"))) next.pub_year = info.pub_year;
+      if (info.cover_url && (!next.cover_url || ask("Cover image"))) next.cover_url = info.cover_url;
+      setF(next);
+    } catch (err) {
+      setLookupError(err instanceof Error ? err.message : "Lookup failed");
+    } finally {
+      setLookupLoading(false);
+    }
+  };
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
       <div className="lp-modal" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
@@ -1216,7 +1238,21 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
           <div style={{ display: "flex", gap: 12 }}>
             <div className="lp-input-group" style={{ flex: 1 }}>
               <label>{t("tbl_isbn")}</label>
-              <input value={f.isbn} onChange={(e) => setF({ ...f, isbn: e.target.value })} />
+              <div style={{ display: "flex", gap: 6 }}>
+                <input style={{ flex: 1 }} value={f.isbn} onChange={(e) => { setF({ ...f, isbn: e.target.value }); if (lookupError) setLookupError(null); }} />
+                <button
+                  type="button"
+                  className="lp-btn"
+                  title="Fetch by ISBN"
+                  aria-label="Fetch by ISBN"
+                  onClick={runIsbnLookup}
+                  disabled={lookupLoading || !f.isbn.trim()}
+                  style={{ padding: "0 12px" }}
+                >
+                  <i className={`fa-solid ${lookupLoading ? "fa-spinner fa-spin" : "fa-cloud-arrow-down"}`} />
+                </button>
+              </div>
+              {lookupError && <div style={{ color: "#c0392b", fontSize: 12, marginTop: 4 }}>{lookupError}</div>}
             </div>
             <div className="lp-input-group" style={{ flex: 2 }}>
               <label>{t("tbl_title")}</label>
