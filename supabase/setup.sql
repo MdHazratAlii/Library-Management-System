@@ -38,7 +38,8 @@ END$$;
 CREATE TABLE IF NOT EXISTS public.categories (
   id     SERIAL PRIMARY KEY,
   name   TEXT NOT NULL,
-  descr  TEXT DEFAULT ''
+  descr  TEXT DEFAULT '',
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS public.books (
@@ -50,10 +51,12 @@ CREATE TABLE IF NOT EXISTS public.books (
   pub_year   INT DEFAULT 2024,
   qty        INT DEFAULT 1,
   available  INT DEFAULT 1,
-  cover_url  TEXT DEFAULT ''
+  cover_url  TEXT DEFAULT '',
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.books      ADD COLUMN IF NOT EXISTS cover_url TEXT DEFAULT '';
 ALTER TABLE public.books      ADD COLUMN IF NOT EXISTS author    TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.books      ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS public.students (
   id          SERIAL PRIMARY KEY,
@@ -62,9 +65,11 @@ CREATE TABLE IF NOT EXISTS public.students (
   email       TEXT DEFAULT '',
   phone       TEXT DEFAULT '',
   image_url   TEXT DEFAULT '',
-  address     TEXT DEFAULT ''
+  address     TEXT DEFAULT '',
+  updated_at  timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.students   ADD COLUMN IF NOT EXISTS address TEXT DEFAULT '';
+ALTER TABLE public.students   ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS public.book_issues (
   id           SERIAL PRIMARY KEY,
@@ -73,17 +78,21 @@ CREATE TABLE IF NOT EXISTS public.book_issues (
   issue_date   DATE DEFAULT CURRENT_DATE,
   due_date     DATE NOT NULL,
   return_date  DATE,
-  status       TEXT DEFAULT 'Issued'
+  status       TEXT DEFAULT 'Issued',
+  updated_at   timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.book_issues ADD COLUMN IF NOT EXISTS return_date DATE;
+ALTER TABLE public.book_issues ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS public.fines (
   id          SERIAL PRIMARY KEY,
   issue_id    INT REFERENCES public.book_issues(id),
   student_id  INT REFERENCES public.students(id),
   amount      NUMERIC DEFAULT 0,
-  status      TEXT DEFAULT 'Unpaid'
+  status      TEXT DEFAULT 'Unpaid',
+  updated_at  timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.fines      ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS public.user_roles (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -150,21 +159,62 @@ DROP POLICY IF EXISTS "Admins manage books"      ON public.books;
 DROP POLICY IF EXISTS "Admins manage students"   ON public.students;
 DROP POLICY IF EXISTS "Admins manage issues"     ON public.book_issues;
 DROP POLICY IF EXISTS "Admins manage fines"      ON public.fines;
+DROP POLICY IF EXISTS "Authenticated manage categories"  ON public.categories;
+DROP POLICY IF EXISTS "Authenticated manage books"       ON public.books;
+DROP POLICY IF EXISTS "Authenticated manage students"    ON public.students;
+DROP POLICY IF EXISTS "Authenticated manage book_issues" ON public.book_issues;
+DROP POLICY IF EXISTS "Authenticated manage fines"       ON public.fines;
 DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
 
-CREATE POLICY "Admins manage categories" ON public.categories  FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admins manage books"      ON public.books       FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admins manage students"   ON public.students    FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admins manage issues"     ON public.book_issues FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
-CREATE POLICY "Admins manage fines"      ON public.fines       FOR ALL TO authenticated
-  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+-- Any authenticated user can manage library data. Role gating happens in the app.
+CREATE POLICY "Authenticated manage categories"  ON public.categories  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated manage books"       ON public.books       FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated manage students"    ON public.students    FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated manage book_issues" ON public.book_issues FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Authenticated manage fines"       ON public.fines       FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 CREATE POLICY "Users can view their own roles" ON public.user_roles FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- 7b. updated_at trigger — keeps updated_at fresh on every row UPDATE
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+DO $$
+DECLARE t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['categories','books','students','book_issues','fines'] LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS set_%1$s_updated_at ON public.%1$s', t);
+    EXECUTE format('CREATE TRIGGER set_%1$s_updated_at BEFORE UPDATE ON public.%1$s FOR EACH ROW EXECUTE FUNCTION public.set_updated_at()', t);
+  END LOOP;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- 7c. First signed-up user becomes admin automatically
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.grant_admin_to_first_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.user_roles WHERE role = 'admin'::public.app_role) THEN
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'admin'::public.app_role)
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created_grant_first_admin ON auth.users;
+CREATE TRIGGER on_auth_user_created_grant_first_admin
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.grant_admin_to_first_user();
 
 -- -----------------------------------------------------------------------------
 -- 8. Bootstrap RPCs — first signed-in user can claim admin
@@ -209,14 +259,26 @@ ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS "Admins manage library-images" ON storage.objects;
 DROP POLICY IF EXISTS "Public read library-images"   ON storage.objects;
+DROP POLICY IF EXISTS "library-images read"   ON storage.objects;
+DROP POLICY IF EXISTS "library-images insert" ON storage.objects;
+DROP POLICY IF EXISTS "library-images update" ON storage.objects;
+DROP POLICY IF EXISTS "library-images delete" ON storage.objects;
 
-CREATE POLICY "Admins manage library-images"
-  ON storage.objects FOR ALL TO authenticated
-  USING      (bucket_id = 'library-images' AND public.has_role(auth.uid(), 'admin'::public.app_role))
-  WITH CHECK (bucket_id = 'library-images' AND public.has_role(auth.uid(), 'admin'::public.app_role));
+CREATE POLICY "library-images read" ON storage.objects
+  FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'library-images');
 
-CREATE POLICY "Public read library-images"
-  ON storage.objects FOR SELECT TO anon, authenticated
+CREATE POLICY "library-images insert" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'library-images');
+
+CREATE POLICY "library-images update" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'library-images')
+  WITH CHECK (bucket_id = 'library-images');
+
+CREATE POLICY "library-images delete" ON storage.objects
+  FOR DELETE TO authenticated
   USING (bucket_id = 'library-images');
 
 -- =============================================================================
