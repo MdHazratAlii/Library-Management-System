@@ -517,14 +517,14 @@ export function Dashboard() {
 
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <header className="lp-header" style={{ minHeight: 72, background: "#fff", borderBottom: "1px solid var(--lp-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, paddingTop: 12, paddingBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", minWidth: 0 }}>
+        <header className="lp-header" style={{ minHeight: isMobile ? 60 : 72, background: "#fff", borderBottom: "1px solid var(--lp-border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "nowrap", gap: isMobile ? 8 : 12, paddingTop: isMobile ? 10 : 12, paddingBottom: isMobile ? 10 : 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 12, flexWrap: "nowrap", minWidth: 0, flexShrink: 1 }}>
             <button
               type="button"
               onClick={() => (isMobile ? setMobileOpen((v) => !v) : setCollapsed((v) => !v))}
               aria-label={isMobile ? (mobileOpen ? "Close menu" : "Open menu") : collapsed ? "Expand sidebar" : "Collapse sidebar"}
               title={isMobile ? t("tip_menu") : collapsed ? t("tip_expand_sidebar") : t("tip_collapse_sidebar")}
-              style={{ width: 44, height: 44, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", cursor: "pointer", color: "#181e15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              style={{ width: isMobile ? 40 : 44, height: isMobile ? 40 : 44, borderRadius: 100, border: "1px solid var(--lp-border)", background: "#fff", cursor: "pointer", color: "#181e15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
             >
               <i className={`fa-solid ${isMobile ? "fa-bars" : collapsed ? "fa-angles-right" : "fa-angles-left"}`} />
             </button>
@@ -534,12 +534,17 @@ export function Dashboard() {
                 {dateStr}
               </div>
             )}
+            {isMobile && (
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#181e15", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>
+                {t(view as any) || t("dashboard")}
+              </div>
+            )}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 6 : 12, flexWrap: "nowrap", flexShrink: 0 }}>
             {librarianPhoto ? (
-              <img src={librarianPhoto} alt={username} style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #18f0bf" }} />
+              <img src={librarianPhoto} alt={username} style={{ width: isMobile ? 36 : 44, height: isMobile ? 36 : 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #18f0bf" }} />
             ) : (
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#18f0bf", color: "#181e15", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>
+              <div style={{ width: isMobile ? 36 : 44, height: isMobile ? 36 : 44, borderRadius: "50%", background: "#18f0bf", color: "#181e15", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, textTransform: "uppercase", flexShrink: 0, fontSize: isMobile ? 13 : 15 }}>
                 {username[0]}
               </div>
             )}
@@ -548,7 +553,7 @@ export function Dashboard() {
               <div style={{ fontSize: 11, color: "#6c6e79" }}>{t("librarian")}</div>
             </div>}
             {!isMobile && <div style={{ width: 1, height: 32, background: "#dceeeb", margin: "0 4px" }} />}
-            <SyncStatus />
+            <SyncStatus compact={isMobile} />
             <LanguageSelector compact={isMobile} />
             <button className="lp-btn lp-btn-outline-danger" onClick={logout}>
               <i className="fa-solid fa-right-from-bracket" /> {!isMobile && t("logout")}
