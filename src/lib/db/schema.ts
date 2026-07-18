@@ -37,6 +37,8 @@ export type OutboxEntry = {
 
 export type MetaKV = { key: string; value: string };
 
+export type ImageBlob = { url: string; blob: Blob; cached_at: number };
+
 class LibraryDB extends Dexie {
   books!: Table<LBook, number>;
   categories!: Table<LCategory, number>;
@@ -45,6 +47,7 @@ class LibraryDB extends Dexie {
   fines!: Table<LFine, number>;
   outbox!: Table<OutboxEntry, number>;
   meta!: Table<MetaKV, string>;
+  image_blobs!: Table<ImageBlob, string>;
 
   constructor() {
     super("library-pro");
@@ -56,6 +59,16 @@ class LibraryDB extends Dexie {
       fines: "id, issue_id, student_id, status, updated_at",
       outbox: "++id, table, createdAt",
       meta: "key",
+    });
+    this.version(2).stores({
+      books: "id, cat_id, updated_at",
+      categories: "id, updated_at",
+      students: "id, updated_at",
+      book_issues: "id, book_id, student_id, status, updated_at",
+      fines: "id, issue_id, student_id, status, updated_at",
+      outbox: "++id, table, createdAt",
+      meta: "key",
+      image_blobs: "url, cached_at",
     });
   }
 }
