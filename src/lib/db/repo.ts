@@ -39,9 +39,9 @@ export async function listFines(): Promise<LFine[]> { return liveList<LFine>("fi
 
 async function insertRow<T extends { id: number }>(table: SyncTable, data: Omit<T, "id">): Promise<T> {
   const tempId = nextTempId();
-  const row = { ...(data as object), id: tempId, _dirty: 1 as const, updated_at: nowIso() } as T;
+  const row = { ...(data as unknown as object), id: tempId, _dirty: 1 as const, updated_at: nowIso() } as unknown as T;
   await db().table(table).put(row);
-  await enqueue({ table, op: "insert", tempId, payload: data as Record<string, unknown> });
+  await enqueue({ table, op: "insert", tempId, payload: data as unknown as Record<string, unknown> });
   emitLocalChange();
   kickSync();
   return row;
