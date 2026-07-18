@@ -12,6 +12,10 @@ import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type Libr
 import { uploadTitledImage } from "@/lib/image-upload";
 import { useLang, localeFor } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { SyncStatus } from "@/components/SyncStatus";
+import { repo, listBooks, listCategories, listStudents, listIssues, listFines } from "@/lib/db/repo";
+import { onLocalChange, isBrowser } from "@/lib/db/schema";
+import { kickSync } from "@/lib/db/sync";
 
 type Category = { id: number; name: string; descr: string };
 type Book = { id: number; title: string; author: string; isbn: string; cat_id: number | null; pub_year: number; qty: number; available: number; cover_url?: string };
@@ -120,22 +124,29 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const loadAll = useCallback(async () => {
+    // Read from the local IndexedDB mirror. Sync runs in the background.
+    if (!isBrowser()) { setLoading(false); return; }
     const [b, c, s, i, f] = await Promise.all([
-      supabase.from("books").select("*").order("id", { ascending: false }),
-      supabase.from("categories").select("*").order("id", { ascending: false }),
-      supabase.from("students").select("*").order("id", { ascending: false }),
-      supabase.from("book_issues").select("*").order("id", { ascending: false }),
-      supabase.from("fines").select("*").order("id", { ascending: false }),
+      listBooks(), listCategories(), listStudents(), listIssues(), listFines(),
     ]);
-    if (b.data) setBooks(b.data as Book[]);
-    if (c.data) setCats(c.data as Category[]);
-    if (s.data) setStudents(s.data as Student[]);
-    if (i.data) setIssues(i.data as Issue[]);
-    if (f.data) setFines(f.data as Fine[]);
+    const byIdDesc = <T extends { id: number }>(arr: T[]) => [...arr].sort((x, y) => y.id - x.id);
+    setBooks(byIdDesc(b) as Book[]);
+    setCats(byIdDesc(c) as Category[]);
+    setStudents(byIdDesc(s) as Student[]);
+    setIssues(byIdDesc(i) as Issue[]);
+    setFines(byIdDesc(f) as Fine[]);
     setLoading(false);
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => {
+    loadAll();
+    if (!isBrowser()) return;
+    // Re-render whenever the local DB changes (either from user writes or a sync pull).
+    const off = onLocalChange(() => { loadAll(); });
+    // Kick a sync on mount so we pull the latest.
+    kickSync();
+    return () => { off(); };
+  }, [loadAll]);
   useEffect(() => {
     const applyUser = (user: { email?: string | null; user_metadata?: Record<string, unknown> } | null) => {
       if (!user) return;
@@ -261,31 +272,31 @@ export function Dashboard() {
     if (form.id) {
       const old = bookMap[form.id];
       const newAvail = Math.max(0, (old?.available || 0) + (form.qty - (old?.qty || 0)));
-      await supabase.from("books").update({
-        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: newAvail,
-        cover_url: form.cover_url ?? "",
-      } as never).eq("id", form.id);
+      await repo.updateBook(form.id, {
+        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id,
+        pub_year: form.pub_year, qty: form.qty, available: newAvail, cover_url: form.cover_url ?? "",
+      });
     } else {
-      await supabase.from("books").insert({
-        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id, pub_year: form.pub_year, qty: form.qty, available: form.qty,
-        cover_url: form.cover_url ?? "",
-      } as never);
+      await repo.insertBook({
+        title: form.title, author: form.author ?? "", isbn: form.isbn, cat_id: form.cat_id,
+        pub_year: form.pub_year, qty: form.qty, available: form.qty, cover_url: form.cover_url ?? "",
+      });
     }
-    close(); loadAll();
+    close();
   };
 
   const saveCat = async (form: Category & { id?: number }) => {
-    if (form.id) await supabase.from("categories").update({ name: form.name, descr: form.descr }).eq("id", form.id);
-    else await supabase.from("categories").insert({ name: form.name, descr: form.descr });
-    close(); loadAll();
+    if (form.id) await repo.updateCategory(form.id, { name: form.name, descr: form.descr });
+    else await repo.insertCategory({ name: form.name, descr: form.descr });
+    close();
   };
 
   const saveStudent = async (form: Student & { id?: number }) => {
     const image_url = form.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name)}&background=ff6b00&color=fff`;
     const { id, ...rest } = form;
-    if (id) await supabase.from("students").update({ ...rest, image_url }).eq("id", id);
-    else await supabase.from("students").insert({ ...rest, image_url });
-    close(); loadAll();
+    if (id) await repo.updateStudent(id, { ...rest, image_url });
+    else await repo.insertStudent({ ...rest, image_url });
+    close();
   };
 
   const saveIssue = async (form: { book_id: number; student_id: number; due_date: string }) => {
@@ -298,16 +309,9 @@ export function Dashboard() {
       alert(t("err_max_issues", { count: activeCount, max: maxIssues }));
       return;
     }
-    const ins = await supabase
-      .from("book_issues")
-      .insert({ book_id: form.book_id, student_id: form.student_id, due_date: form.due_date, status: "Issued", issue_date: todayISO() });
-    if (ins.error) {
-      alert(t("err_issue_failed", { msg: ins.error.message }));
-      return;
-    }
-    const upd = await supabase.from("books").update({ available: (b.available ?? 0) - 1 }).eq("id", b.id);
-    if (upd.error) alert(t("err_stock_update", { msg: upd.error.message }));
-    close(); loadAll();
+    await repo.insertIssue({ book_id: form.book_id, student_id: form.student_id, due_date: form.due_date, status: "Issued", issue_date: todayISO() });
+    await repo.updateBook(b.id, { available: (b.available ?? 0) - 1 });
+    close();
   };
 
   const del = async (table: "books" | "categories" | "students", id: number) => {
@@ -322,20 +326,20 @@ export function Dashboard() {
       if (issues.some((i) => i.student_id === id && i.status === "Issued")) { alert(t("err_delete_student_active")); return; }
     }
     if (!confirm(t("confirm_delete_item"))) return;
-    await supabase.from(table).delete().eq("id", id);
-    loadAll();
+    if (table === "books") await repo.deleteBook(id);
+    else if (table === "categories") await repo.deleteCategory(id);
+    else await repo.deleteStudent(id);
   };
 
   const returnIssue = async (iss: Issue) => {
     if (iss.status === "Returned") return;
     const late = daysBetween(iss.due_date);
     if (late > 0) {
-      await supabase.from("fines").insert({ issue_id: iss.id, student_id: iss.student_id, amount: late * getSettings().fineRate, status: "Unpaid" });
+      await repo.insertFine({ issue_id: iss.id, student_id: iss.student_id, amount: late * getSettings().fineRate, status: "Unpaid" });
     }
-    await supabase.from("book_issues").update({ status: "Returned", return_date: todayISO() } as never).eq("id", iss.id);
+    await repo.updateIssue(iss.id, { status: "Returned", return_date: todayISO() });
     const b = bookMap[iss.book_id];
-    if (b) await supabase.from("books").update({ available: b.available + 1 }).eq("id", b.id);
-    loadAll();
+    if (b) await repo.updateBook(b.id, { available: b.available + 1 });
   };
 
   const payFine = async (id: number) => {
@@ -343,52 +347,49 @@ export function Dashboard() {
       message: t("confirm_mark_paid"),
       confirmLabel: t("btn_mark_paid"),
       onConfirm: async () => {
-        await supabase.from("fines").update({ status: "Paid" }).eq("id", id);
-        loadAll();
+        await repo.updateFine(id, { status: "Paid" });
       },
     });
   };
 
   const saveIssueEdit = async (form: Issue) => {
     const old = issueMap[form.id];
-    await supabase.from("book_issues").update({ due_date: form.due_date, status: form.status }).eq("id", form.id);
+    await repo.updateIssue(form.id, { due_date: form.due_date, status: form.status });
     if (old && old.status !== form.status) {
       const b = bookMap[old.book_id];
       if (b) {
         if (old.status === "Issued" && form.status === "Returned") {
-          await supabase.from("books").update({ available: b.available + 1 }).eq("id", b.id);
+          await repo.updateBook(b.id, { available: b.available + 1 });
         } else if (old.status === "Returned" && form.status === "Issued") {
-          await supabase.from("books").update({ available: Math.max(0, b.available - 1) }).eq("id", b.id);
+          await repo.updateBook(b.id, { available: Math.max(0, b.available - 1) });
         }
       }
     }
-    close(); loadAll();
+    close();
   };
 
   const delIssue = async (i: Issue) => {
     if (!confirm(t("confirm_delete_issue"))) return;
-    await supabase.from("fines").delete().eq("issue_id", i.id);
-    await supabase.from("book_issues").delete().eq("id", i.id);
+    await repo.deleteFinesForIssue(i.id);
+    await repo.deleteIssue(i.id);
     if (i.status === "Issued") {
       const b = bookMap[i.book_id];
-      if (b) await supabase.from("books").update({ available: b.available + 1 }).eq("id", b.id);
+      if (b) await repo.updateBook(b.id, { available: b.available + 1 });
     }
-    loadAll();
   };
 
   const saveFine = async (form: Fine) => {
     if (form.id) {
-      await supabase.from("fines").update({ amount: form.amount, status: form.status, issue_id: form.issue_id, student_id: form.student_id }).eq("id", form.id);
+      await repo.updateFine(form.id, { amount: form.amount, status: form.status, issue_id: form.issue_id, student_id: form.student_id });
     } else {
-      await supabase.from("fines").insert({ amount: form.amount, status: form.status, issue_id: form.issue_id, student_id: form.student_id });
+      await repo.insertFine({ amount: form.amount, status: form.status, issue_id: form.issue_id, student_id: form.student_id });
     }
-    close(); loadAll();
+    close();
   };
 
   const delFine = async (id: number) => {
     if (!confirm(t("confirm_delete_fine"))) return;
-    await supabase.from("fines").delete().eq("id", id);
-    loadAll();
+    await repo.deleteFine(id);
   };
 
   const dateStr = new Date().toLocaleDateString(localeFor(lang), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
@@ -546,6 +547,7 @@ export function Dashboard() {
               <div style={{ fontSize: 11, color: "#6c6e79" }}>{t("librarian")}</div>
             </div>}
             {!isMobile && <div style={{ width: 1, height: 32, background: "#dceeeb", margin: "0 4px" }} />}
+            <SyncStatus />
             <LanguageSelector compact={isMobile} />
             <button className="lp-btn lp-btn-outline-danger" onClick={logout}>
               <i className="fa-solid fa-right-from-bracket" /> {!isMobile && t("logout")}
