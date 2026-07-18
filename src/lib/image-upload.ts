@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { primeImageCache } from "@/lib/image-cache";
 
 const BUCKET = "library-images";
 const SIGNED_EXPIRY = 60 * 60 * 24 * 365 * 10; // ~10 years
@@ -75,7 +76,10 @@ export async function uploadOrEmbedTitledImage(
   const webp = await toCompressedWebP(file, isOnline() ? 1024 : 640, isOnline() ? 0.82 : 0.75);
   if (isOnline()) {
     try {
-      return await uploadBlob(webp, title, folder);
+      const url = await uploadBlob(webp, title, folder);
+      // Prime the local cache so refreshes / offline sessions render instantly.
+      await primeImageCache(url, webp);
+      return url;
     } catch {
       // fall through to embedded data URL
     }
