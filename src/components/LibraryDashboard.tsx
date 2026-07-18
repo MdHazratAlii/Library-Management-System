@@ -1241,7 +1241,17 @@ function BookModal({ cats, data, onClose, onSave }: { cats: Category[]; data: Bo
             <div className="lp-input-group" style={{ flex: 1 }}>
               <label>{t("tbl_isbn")}</label>
               <div style={{ display: "flex", gap: 6 }}>
-                <input style={{ flex: 1 }} value={f.isbn} onChange={(e) => { setF({ ...f, isbn: e.target.value }); if (lookupError) setLookupError(null); }} />
+                <input
+                  style={{ flex: 1 }}
+                  value={f.isbn}
+                  onChange={(e) => { setF({ ...f, isbn: e.target.value }); if (lookupError) setLookupError(null); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (!lookupLoading && f.isbn.trim()) runIsbnLookup();
+                    }
+                  }}
+                />
                 <button
                   type="button"
                   className="lp-btn"
