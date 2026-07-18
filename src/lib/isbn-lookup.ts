@@ -6,12 +6,45 @@ export type IsbnBook = {
 };
 
 export function normalizeIsbn(raw: string): string {
-  return (raw || "").replace(/[-\s]/g, "").trim();
+  return (raw || "").replace(/[-\s]/g, "").trim().toUpperCase();
+}
+
+function isValidIsbn10(s: string): boolean {
+  if (!/^\d{9}[\dX]$/.test(s)) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += (i + 1) * Number(s[i]);
+  const check = s[9] === "X" ? 10 : Number(s[9]);
+  sum += 10 * check;
+  return sum % 11 === 0;
+}
+
+function isValidIsbn13(s: string): boolean {
+  if (!/^\d{13}$/.test(s)) return false;
+  let sum = 0;
+  for (let i = 0; i < 13; i++) sum += Number(s[i]) * (i % 2 === 0 ? 1 : 3);
+  return sum % 10 === 0;
+}
+
+// Convert ISBN-10 to ISBN-13 for consistent cache keys and lookups.
+export function isbn10To13(isbn10: string): string {
+  const core = "978" + isbn10.slice(0, 9);
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += Number(core[i]) * (i % 2 === 0 ? 1 : 3);
+  const check = (10 - (sum % 10)) % 10;
+  return core + String(check);
 }
 
 export function isValidIsbn(raw: string): boolean {
   const s = normalizeIsbn(raw);
-  return /^(?:\d{9}[\dXx]|\d{13})$/.test(s);
+  return isValidIsbn10(s) || isValidIsbn13(s);
+}
+
+/** Returns a canonical ISBN-13 string, or null if invalid. */
+export function canonicalIsbn(raw: string): string | null {
+  const s = normalizeIsbn(raw);
+  if (isValidIsbn13(s)) return s;
+  if (isValidIsbn10(s)) return isbn10To13(s);
+  return null;
 }
 
 const CACHE_KEY = "isbn-lookup-cache-v1";
@@ -88,8 +121,8 @@ async function fetchOpenLibrary(isbn: string): Promise<IsbnBook | null> {
 }
 
 export async function lookupIsbn(raw: string): Promise<IsbnBook> {
-  const isbn = normalizeIsbn(raw);
-  if (!isValidIsbn(isbn)) throw new Error("Invalid ISBN");
+  const isbn = canonicalIsbn(raw);
+  if (!isbn) throw new Error("Invalid ISBN");
 
   const cached = getCached(isbn);
   if (cached) return cached;
