@@ -17,6 +17,8 @@ import { OfflineIndicator } from "../components/OfflineIndicator";
 import { InstallPrompt } from "../components/InstallPrompt";
 import { DevInfoPopup } from "../components/DevInfoPopup";
 import { LanguageProvider } from "../lib/i18n";
+import { startSyncEngine, kickSync, clearLocalCache } from "../lib/db/sync";
+import { isBrowser } from "../lib/db/schema";
 
 function NotFoundComponent() {
   return (
@@ -139,6 +141,10 @@ function RootComponent() {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        if (isBrowser()) {
+          if (event === "SIGNED_OUT") { void clearLocalCache(); }
+          else { kickSync(); }
+        }
       }
     });
     return () => sub.subscription.unsubscribe();
@@ -146,6 +152,11 @@ function RootComponent() {
 
   useEffect(() => {
     registerAppSW();
+  }, []);
+
+  useEffect(() => {
+    // Start background pull/push loop for the offline data layer.
+    if (isBrowser()) startSyncEngine();
   }, []);
 
   return (
