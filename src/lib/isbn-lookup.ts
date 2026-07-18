@@ -14,6 +14,42 @@ export function isValidIsbn(raw: string): boolean {
   return /^(?:\d{9}[\dXx]|\d{13})$/.test(s);
 }
 
+const CACHE_KEY = "isbn-lookup-cache-v1";
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+type CacheEntry = { at: number; book: IsbnBook };
+const memCache = new Map<string, Promise<IsbnBook>>();
+
+function loadDisk(): Record<string, CacheEntry> {
+  if (typeof localStorage === "undefined") return {};
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch { return {}; }
+}
+function saveDisk(data: Record<string, CacheEntry>) {
+  if (typeof localStorage === "undefined") return;
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch { /* quota */ }
+}
+function getCached(isbn: string): IsbnBook | null {
+  const disk = loadDisk();
+  const e = disk[isbn];
+  if (!e) return null;
+  if (Date.now() - e.at > CACHE_TTL_MS) {
+    delete disk[isbn];
+    saveDisk(disk);
+    return null;
+  }
+  return e.book;
+}
+function setCached(isbn: string, book: IsbnBook) {
+  const disk = loadDisk();
+  disk[isbn] = { at: Date.now(), book };
+  saveDisk(disk);
+}
+
+export function clearIsbnCache() {
+  memCache.clear();
+  if (typeof localStorage !== "undefined") localStorage.removeItem(CACHE_KEY);
+}
+
 function yearFrom(dateStr?: string): number | undefined {
   if (!dateStr) return undefined;
   const m = String(dateStr).match(/\d{4}/);
@@ -54,11 +90,23 @@ async function fetchOpenLibrary(isbn: string): Promise<IsbnBook | null> {
 export async function lookupIsbn(raw: string): Promise<IsbnBook> {
   const isbn = normalizeIsbn(raw);
   if (!isValidIsbn(isbn)) throw new Error("Invalid ISBN");
-  try {
-    const g = await fetchGoogle(isbn);
-    if (g && (g.title || g.author || g.cover_url)) return g;
-  } catch { /* fall through */ }
-  const o = await fetchOpenLibrary(isbn);
-  if (o && (o.title || o.author || o.cover_url)) return o;
-  throw new Error("Book not found");
+
+  const cached = getCached(isbn);
+  if (cached) return cached;
+
+  const inFlight = memCache.get(isbn);
+  if (inFlight) return inFlight;
+
+  const promise = (async () => {
+    try {
+      const g = await fetchGoogle(isbn);
+      if (g && (g.title || g.author || g.cover_url)) { setCached(isbn, g); return g; }
+    } catch { /* fall through */ }
+    const o = await fetchOpenLibrary(isbn);
+    if (o && (o.title || o.author || o.cover_url)) { setCached(isbn, o); return o; }
+    throw new Error("Book not found");
+  })();
+
+  memCache.set(isbn, promise);
+  try { return await promise; } finally { memCache.delete(isbn); }
 }
