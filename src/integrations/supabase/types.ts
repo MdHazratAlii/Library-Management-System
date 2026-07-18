@@ -23,6 +23,7 @@ export type Database = {
           return_date: string | null
           status: string | null
           student_id: number | null
+          updated_at: string
         }
         Insert: {
           book_id?: number | null
@@ -32,6 +33,7 @@ export type Database = {
           return_date?: string | null
           status?: string | null
           student_id?: number | null
+          updated_at?: string
         }
         Update: {
           book_id?: number | null
@@ -41,6 +43,7 @@ export type Database = {
           return_date?: string | null
           status?: string | null
           student_id?: number | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -70,6 +73,7 @@ export type Database = {
           pub_year: number | null
           qty: number | null
           title: string
+          updated_at: string
         }
         Insert: {
           author?: string
@@ -81,6 +85,7 @@ export type Database = {
           pub_year?: number | null
           qty?: number | null
           title: string
+          updated_at?: string
         }
         Update: {
           author?: string
@@ -92,6 +97,7 @@ export type Database = {
           pub_year?: number | null
           qty?: number | null
           title?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -108,16 +114,19 @@ export type Database = {
           descr: string | null
           id: number
           name: string
+          updated_at: string
         }
         Insert: {
           descr?: string | null
           id?: number
           name: string
+          updated_at?: string
         }
         Update: {
           descr?: string | null
           id?: number
           name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -128,6 +137,7 @@ export type Database = {
           issue_id: number | null
           status: string | null
           student_id: number | null
+          updated_at: string
         }
         Insert: {
           amount?: number | null
@@ -135,6 +145,7 @@ export type Database = {
           issue_id?: number | null
           status?: string | null
           student_id?: number | null
+          updated_at?: string
         }
         Update: {
           amount?: number | null
@@ -142,6 +153,7 @@ export type Database = {
           issue_id?: number | null
           status?: string | null
           student_id?: number | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -169,6 +181,7 @@ export type Database = {
           name: string
           phone: string | null
           student_id: string
+          updated_at: string
         }
         Insert: {
           address?: string | null
@@ -178,6 +191,7 @@ export type Database = {
           name: string
           phone?: string | null
           student_id: string
+          updated_at?: string
         }
         Update: {
           address?: string | null
@@ -187,6 +201,7 @@ export type Database = {
           name?: string
           phone?: string | null
           student_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
