@@ -547,6 +547,7 @@ export function Dashboard() {
               <div style={{ fontSize: 11, color: "#6c6e79" }}>{t("librarian")}</div>
             </div>}
             {!isMobile && <div style={{ width: 1, height: 32, background: "#dceeeb", margin: "0 4px" }} />}
+            <SyncStatus />
             <LanguageSelector compact={isMobile} />
             <button className="lp-btn lp-btn-outline-danger" onClick={logout}>
               <i className="fa-solid fa-right-from-bracket" /> {!isMobile && t("logout")}
