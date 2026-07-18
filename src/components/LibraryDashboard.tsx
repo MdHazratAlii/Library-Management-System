@@ -10,6 +10,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
 import { uploadOrEmbedTitledImage } from "@/lib/image-upload";
+import { CachedImage } from "@/components/CachedImage";
 import { useLang, localeFor } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { SyncStatus } from "@/components/SyncStatus";
