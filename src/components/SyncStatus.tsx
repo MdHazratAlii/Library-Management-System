@@ -5,7 +5,7 @@ import { outboxCount } from "@/lib/db/repo";
 import { kickSync } from "@/lib/db/sync";
 import { useLang } from "@/lib/i18n";
 
-export function SyncStatus() {
+export function SyncStatus({ compact = false }: { compact?: boolean } = {}) {
   const { t } = useLang();
   const [online, setOnline] = useState<boolean>(() => (typeof navigator === "undefined" ? true : navigator.onLine));
   const [pending, setPending] = useState<number>(0);
@@ -35,17 +35,22 @@ export function SyncStatus() {
     <button
       type="button"
       onClick={() => kickSync()}
-      title={t("sync_click_retry")}
+      title={compact ? `${label} — ${t("sync_click_retry")}` : t("sync_click_retry")}
+      aria-label={label}
       style={{
         display: "inline-flex", alignItems: "center", gap: 8,
-        padding: "6px 12px", borderRadius: 100,
+        padding: compact ? 0 : "6px 12px",
+        width: compact ? 36 : undefined,
+        height: compact ? 36 : undefined,
+        justifyContent: "center",
+        borderRadius: 100,
         background: bg, border: `1px solid ${border}`,
         color: "#181e15", fontSize: 12, fontWeight: 600,
-        cursor: "pointer", fontFamily: "Inter, sans-serif",
+        cursor: "pointer", fontFamily: "Inter, sans-serif", flexShrink: 0,
       }}
     >
-      <span style={{ width: 8, height: 8, borderRadius: 100, background: dotColor, display: "inline-block" }} />
-      {label}
+      <span style={{ width: compact ? 10 : 8, height: compact ? 10 : 8, borderRadius: 100, background: dotColor, display: "inline-block" }} />
+      {!compact && label}
     </button>
   );
 }
