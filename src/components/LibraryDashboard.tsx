@@ -10,6 +10,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
 import { uploadOrEmbedTitledImage } from "@/lib/image-upload";
+import { CachedImage } from "@/components/CachedImage";
 import { useLang, localeFor } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { SyncStatus } from "@/components/SyncStatus";
@@ -655,7 +656,7 @@ export function Dashboard() {
                       <tr key={b.id}>
                          <td>
                            {b.cover_url ? (
-                             <img src={b.cover_url} alt={b.title} style={{ width: 40, height: 56, objectFit: "cover", borderRadius: 6, border: "1px solid var(--lp-border)", background: "#f4f5f7" }} loading="lazy" />
+                           <CachedImage src={b.cover_url} alt={b.title} style={{ width: 40, height: 56, objectFit: "cover", borderRadius: 6, border: "1px solid var(--lp-border)", background: "#f4f5f7" }} loading="lazy" />
                            ) : (
                              <div style={{ width: 40, height: 56, borderRadius: 6, border: "1px solid var(--lp-border)", background: "#f4f5f7", display: "flex", alignItems: "center", justifyContent: "center", color: "#c1c5cf" }}><i className="fa-solid fa-book" /></div>
                            )}
@@ -750,7 +751,7 @@ export function Dashboard() {
                       <tr key={s.id}>
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <img src={s.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=ff6b00&color=fff`} alt={s.name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+                            <CachedImage src={s.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=ff6b00&color=fff`} alt={s.name} style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                             <div>
                               <div style={{ fontWeight: 600 }}>{s.name}</div>
                               <div style={{ fontSize: 11, color: "#8990a2" }}>{s.email || "—"}</div>
@@ -1177,7 +1178,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
     }
   };
   const preview = value ? (
-    <img src={value} alt="Preview" style={{ width: shape === "circle" ? 56 : 72, height: 56, borderRadius: shape === "circle" ? "50%" : 10, objectFit: "cover", border: "1px solid #e5e7eb", background: "#f7f7f9" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+    <CachedImage src={value} alt="Preview" style={{ width: shape === "circle" ? 56 : 72, height: 56, borderRadius: shape === "circle" ? "50%" : 10, objectFit: "cover", border: "1px solid #e5e7eb", background: "#f7f7f9" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
   ) : (
     <div style={{ width: shape === "circle" ? 56 : 72, height: 56, borderRadius: shape === "circle" ? "50%" : 10, background: "#f2f2f5", border: "1px dashed #d3d5db", display: "grid", placeItems: "center", color: "#a0a3ad" }}><i className="fa-solid fa-image" /></div>
   );
@@ -1443,7 +1444,7 @@ function StudentViewModal({ student, issues, fines, bookMap, onClose }: { studen
       <div className="lp-modal" style={{ maxWidth: 780 }} onClick={(e) => e.stopPropagation()}>
         <button className="lp-modal-close" onClick={onClose}>×</button>
         <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 18 }}>
-          <img
+          <CachedImage
             src={student.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=c190ff&color=fff`}
             alt={student.name}
             style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--lp-border)" }}
