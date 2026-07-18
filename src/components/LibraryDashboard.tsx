@@ -9,7 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { getSettings, saveSettings, loadLogoDataUrl, DEFAULT_SETTINGS, type LibrarySettings } from "@/lib/library-settings";
-import { uploadTitledImage } from "@/lib/image-upload";
+import { uploadTitledImage, uploadOrEmbedTitledImage } from "@/lib/image-upload";
 import { useLang, localeFor } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { SyncStatus } from "@/components/SyncStatus";
@@ -1166,7 +1166,7 @@ function ImageField({ label, title, folder, value, onChange, shape }: { label: s
     setErr(null);
     setBusy(true);
     try {
-      const url = await uploadTitledImage(file, title || label, folder);
+      const url = await uploadOrEmbedTitledImage(file, title || label, folder);
       onChange(url);
     } catch (e2) {
       const msg = e2 instanceof Error ? e2.message : t("err_upload_failed");
