@@ -26,7 +26,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 }
 
 /** Convert + compress to a WebP Blob, downscaling to max side while preserving aspect. */
-async function toCompressedWebP(file: File, maxSide = 1024, quality = 0.82): Promise<Blob> {
+export async function toCompressedWebP(file: File, maxSide = 1024, quality = 0.82): Promise<Blob> {
   const img = await loadImage(file);
   const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
   const w = Math.max(1, Math.round(img.width * scale));
@@ -44,6 +44,57 @@ async function toCompressedWebP(file: File, maxSide = 1024, quality = 0.82): Pro
       quality,
     );
   });
+}
+
+/** Read a Blob as a data: URL (base64). Used as an offline fallback. */
+export function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error ?? new Error("Failed to read blob"));
+    r.readAsDataURL(blob);
+  });
+}
+
+function isOnline(): boolean {
+  return typeof navigator === "undefined" ? true : navigator.onLine !== false;
+}
+
+/**
+ * Offline-tolerant image upload. When online, uploads to Supabase Storage and
+ * returns a signed URL. When offline (or the upload fails), returns a data:
+ * URL embedded in the row so the image is available immediately and syncs to
+ * the database as-is with the rest of the record.
+ */
+export async function uploadOrEmbedTitledImage(
+  file: File,
+  title: string,
+  folder: "students" | "books" | "logos",
+): Promise<string> {
+  // Smaller max side for the offline fallback to keep data URLs reasonable.
+  const webp = await toCompressedWebP(file, isOnline() ? 1024 : 640, isOnline() ? 0.82 : 0.75);
+  if (isOnline()) {
+    try {
+      return await uploadBlob(webp, title, folder);
+    } catch {
+      // fall through to embedded data URL
+    }
+  }
+  return await blobToDataUrl(webp);
+}
+
+async function uploadBlob(webp: Blob, title: string, folder: "students" | "books" | "logos"): Promise<string> {
+  const slug = slugifyTitle(title);
+  const path = `${folder}/${slug}-${Date.now()}.webp`;
+  const { error } = await supabase.storage.from(BUCKET).upload(path, webp, {
+    contentType: "image/webp",
+    upsert: true,
+    cacheControl: "31536000",
+  });
+  if (error) throw error;
+  const { data, error: signErr } = await supabase.storage.from(BUCKET).createSignedUrl(path, SIGNED_EXPIRY);
+  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Failed to sign uploaded image URL");
+  return data.signedUrl;
 }
 
 /**
