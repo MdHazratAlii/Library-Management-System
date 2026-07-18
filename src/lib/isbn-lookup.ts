@@ -6,7 +6,15 @@ export type IsbnBook = {
 };
 
 export function normalizeIsbn(raw: string): string {
-  return (raw || "").replace(/[-\s]/g, "").trim().toUpperCase();
+  const cleaned = (raw || "").toUpperCase();
+  // Try to extract a valid ISBN candidate from arbitrary text (e.g. "ISBN: 3-16-148410-0").
+  // Match runs of digits, X, hyphens and spaces, then strip separators and test length.
+  const matches = cleaned.match(/[0-9X][0-9X\s-]{8,}/g) || [];
+  for (const m of matches) {
+    const stripped = m.replace(/[-\s]/g, "");
+    if (stripped.length === 10 || stripped.length === 13) return stripped;
+  }
+  return cleaned.replace(/[-\s]/g, "").trim();
 }
 
 function isValidIsbn10(s: string): boolean {
