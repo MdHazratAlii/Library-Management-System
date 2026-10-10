@@ -251,6 +251,18 @@ $$;
 GRANT EXECUTE ON FUNCTION public.bootstrap_admin() TO authenticated;
 
 -- -----------------------------------------------------------------------------
+-- 8b. Health check RPC — used by /api/public/health (UptimeRobot keep-alive).
+--     Touches no tables and returns no data; safe for anon.
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.health_check()
+RETURNS text
+LANGUAGE sql
+STABLE
+SET search_path = public
+AS $$ SELECT 'ok'::text $$;
+GRANT EXECUTE ON FUNCTION public.health_check() TO anon, authenticated;
+
+-- -----------------------------------------------------------------------------
 -- 9. Storage bucket + RLS policies
 -- -----------------------------------------------------------------------------
 INSERT INTO storage.buckets (id, name, public)
