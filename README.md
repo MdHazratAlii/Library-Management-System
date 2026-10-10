@@ -77,6 +77,20 @@ Never commit a `service_role` key. The app never uses one on the client.
 2. From **Project Settings → API**, copy the **Project URL** and **anon / publishable key** into your `.env`.
 3. Under **Authentication → Providers**, enable **Email** (used by the admin sign-in flow). Email confirmation can be disabled during development.
 
+## Keep-Alive / Health Check
+
+`GET https://<your-domain>/api/public/health` runs a tiny `select 'ok'` via the
+`public.health_check()` RPC (created by `supabase/setup.sql`) and returns
+`{"status":"ok","message":"Supabase is alive"}` with HTTP 200, or 503 on failure.
+Rate-limited to 30 req/min per IP; read-only; uses only the publishable key.
+
+UptimeRobot: monitor type **HTTP(s)**, method **GET** (or HEAD), interval **5 min**,
+alert when status is not 200 (optionally keyword `Supabase is alive`).
+
+If it returns 503: make sure `setup.sql` has been run in your Supabase project and
+that `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` (and optionally
+`SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY`) were set when the app was built.
+
 ## Run Database Migrations
 
 All schema, RLS policies, functions, and storage buckets live in

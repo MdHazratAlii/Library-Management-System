@@ -50,22 +50,25 @@ async function handle(request: Request): Promise<Response> {
   }
 
   try {
-    const supabase = createClient(
-      process.env['SUPABASE_URL']!,
-      process.env['SUPABASE_PUBLISHABLE_KEY']!,
-      {
-        auth: {
-          storage: undefined,
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      },
-    )
+    const url = process.env['SUPABASE_URL'] || import.meta.env.VITE_SUPABASE_URL
+    const key =
+      process.env['SUPABASE_PUBLISHABLE_KEY'] || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    if (!url || !key) {
+      return Response.json(
+        { status: 'error', message: 'Database unreachable' },
+        { status: 503, headers: securityHeaders() },
+      )
+    }
 
-    // Extremely lightweight: HEAD request, count only, zero rows transferred.
-    const { error } = await supabase
-      .from('books')
-      .select('*', { count: 'exact', head: true })
+    const supabase = createClient(url, key, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    })
+
+    // Extremely lightweight: calls `select 'ok'` via an anon-callable RPC.
+    // (Library tables are admin-only, so the anon key cannot read them.)
+    let { error } = await supabase.rpc('health_check')
+    if (error) ({ error } = await supabase.rpc('has_any_admin'))
+
 
     if (error) {
       return Response.json(
